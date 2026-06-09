@@ -1,0 +1,11 @@
+# Smeruj všetky /api/* požiadavky na index.php
+RewriteEngine On
+RewriteBase /api/
+
+# CORS preflight
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^ index.php [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
