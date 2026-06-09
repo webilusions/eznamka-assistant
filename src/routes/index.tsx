@@ -92,7 +92,13 @@ function VehicleFormPage() {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
+  const onSubmit = async (values: FormValues) => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate({ to: "/auth" });
+      return;
+    }
     mutation.mutate({
       data: {
         licensePlate: values.licensePlate.toUpperCase().trim(),
