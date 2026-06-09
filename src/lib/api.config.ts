@@ -1,9 +1,23 @@
-// Konfigurácia API — nastavte API_BASE_URL na URL vášho Node.js backendu
-// Pre Lovable Cloud preview nechajte undefined (použije sa server functions)
-// Pre self-hosting: API_BASE_URL = "https://vas-server.sk/api" alebo "/api" ak je na rovnakej doméne
+// Konfigurácia API base URL
+// - V Lovable preview (hostname obsahuje "lovable") => undefined => použijú sa Supabase server functions
+// - Inak (váš self-hosted server, kde nahráte /dist) => použije sa relatívne "/api" na rovnakej doméne
+// - Možno prepísať cez VITE_API_BASE_URL pri builde
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+function resolveApiBaseUrl(): string | undefined {
+  const fromEnv = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  if (fromEnv) return fromEnv;
 
-// Ak je nastavený API_BASE_URL, frontend volá externý backend cez fetch
-// Inak použije TanStack server functions (Lovable Cloud)
+  if (typeof window === "undefined") return undefined;
+
+  const host = window.location.hostname;
+  const isLovable = host.endsWith("lovable.app") || host.endsWith("lovable.dev");
+  const isLocalDev = host === "localhost" || host === "127.0.0.1";
+
+  if (isLovable || isLocalDev) return undefined;
+
+  // Self-hosted: backend beží na rovnakej doméne pod /api
+  return "/api";
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 export const USE_EXTERNAL_API = !!API_BASE_URL;
