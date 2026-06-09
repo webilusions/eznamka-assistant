@@ -10,6 +10,9 @@ export default defineConfig({
   tanstackStart: {
     spa: {
       enabled: true,
+      prerender: {
+        outputPath: "/index.html",
+      },
     },
   },
   nitro: false,
