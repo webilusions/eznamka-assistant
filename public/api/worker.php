@@ -266,8 +266,21 @@ function process_task(array $task): void {
         // Z aktuálneho HTML formulára vytiahni VŠETKY skryté polia a defaulty
         $formHtml = $client->lastBody;
         $hidden = [];
-        if (preg_match_all('/<input[^>]+type="hidden"[^>]+name="([^"]+)"[^>]+value="([^"]*)"/i', $formHtml, $mm)) {
-            foreach ($mm[1] as $i => $name) $hidden[$name] = html_entity_decode($mm[2][$i], ENT_QUOTES);
+        // Robustnejší parser - atribúty môžu byť v ľubovoľnom poradí
+        if (preg_match_all('/<input\b[^>]*>/i', $formHtml, $inputs)) {
+            foreach ($inputs[0] as $tag) {
+                if (!preg_match('/type\s*=\s*"hidden"/i', $tag)) continue;
+                if (!preg_match('/\bname\s*=\s*"([^"]+)"/i', $tag, $nm)) continue;
+                $val = '';
+                if (preg_match('/\bvalue\s*=\s*"([^"]*)"/i', $tag, $vm)) $val = $vm[1];
+                $hidden[$nm[1]] = html_entity_decode($val, ENT_QUOTES);
+            }
+        }
+        // Aktualizuj RVT z formulára (môže byť iný ako na /selfcare/purchase)
+        if (isset($hidden['__RequestVerificationToken'])) {
+            $rvt = $hidden['__RequestVerificationToken'];
+        } else {
+            $hidden['__RequestVerificationToken'] = $rvt;
         }
         // ValidTo / Price / ValidityStart / ValidityEnd / IsFixed / IsLicensePlateNumberRequired bývajú v hidden
         log_step($id, 'parse', 'Parsované skryté polia formulára', 'info', ['fields' => array_keys($hidden)]);
@@ -298,9 +311,11 @@ function process_task(array $task): void {
             EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/check/',
             $form,
             [
-                'Referer: ' . EZNAMKA_BASE . '/selfcare/purchase',
+                'Referer: ' . EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId,
                 'X-Requested-With: XMLHttpRequest',
                 'Accept: application/json, text/javascript, */*; q=0.01',
+                'RequestVerificationToken: ' . $rvt,
+                '__RequestVerificationToken: ' . $rvt,
             ]
         );
         log_step($id, 'check', "POST /check/ status={$client->lastStatus}", 'info', ['body_preview' => substr($client->lastBody, 0, 500)]);
