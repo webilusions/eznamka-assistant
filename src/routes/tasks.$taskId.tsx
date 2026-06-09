@@ -75,6 +75,8 @@ export const Route = createFileRoute("/tasks/$taskId")({
 function TaskDetailPage() {
   const { taskId } = useParams({ from: "/tasks/$taskId" });
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [isRunning, setIsRunning] = useState(false);
 
   const fetchTask = useServerFn(getTask);
   const fetchLogs = useServerFn(getTaskLogs);
@@ -84,11 +86,19 @@ function TaskDetailPage() {
   const { data: task, isLoading: taskLoading } = useQuery({
     queryKey: ["task", taskId],
     queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTask(taskId) : fetchTask({ data: { id: taskId } }),
+    refetchInterval: (q) => {
+      const s = (q.state.data as any)?.status;
+      return s === "running" || s === "pending" ? 3000 : false;
+    },
   });
 
   const { data: logs = [], isLoading: logsLoading } = useQuery({
     queryKey: ["task-logs", taskId],
     queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTaskLogs(taskId) : fetchLogs({ data: { taskId } }),
+    refetchInterval: (q) => {
+      const s = (task as any)?.status;
+      return s === "running" || s === "pending" ? 3000 : false;
+    },
   });
 
   const { data: screenshots = [], isLoading: screenshotsLoading } = useQuery({
