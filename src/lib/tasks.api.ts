@@ -15,7 +15,8 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     throw new Error("Externé API nie je nastavené");
   }
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const baseUrl = API_BASE_URL.replace(/\/$/, "");
+  const res = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
