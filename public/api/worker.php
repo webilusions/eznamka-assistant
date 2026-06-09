@@ -72,7 +72,7 @@ function claim_next_pending_task(): ?array {
     $r = sb_request(
         'PATCH',
         '/tasks',
-        ['status' => 'processing', 'updated_at' => gmdate('c')],
+        ['status' => 'running', 'updated_at' => gmdate('c')],
         'status=eq.pending&limit=1&order=created_at.asc',
         ['Prefer: return=representation']
     );
@@ -342,6 +342,6 @@ if (!$task) {
     echo "no pending tasks\n";
     exit;
 }
-echo "processing task {$task['id']}\n";
+echo "running task {$task['id']}\n";
 process_task($task);
 echo "done\n";
