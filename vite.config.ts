@@ -12,4 +12,5 @@ export default defineConfig({
       enabled: true,
     },
   },
+  nitro: false,
 });
