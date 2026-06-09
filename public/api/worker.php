@@ -105,7 +105,6 @@ class EznamkaClient {
         ], $extraHeaders);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_COOKIEJAR => $this->jar,
             CURLOPT_COOKIEFILE => $this->jar,
@@ -115,8 +114,16 @@ class EznamkaClient {
             CURLOPT_HEADER => true,
             CURLOPT_SSL_VERIFYPEER => true,
         ]);
-        if ($form !== null) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($form));
+        if ($method === 'POST') {
+            curl_setopt($ch, CURLOPT_POST, true);
+            $body = $form !== null ? http_build_query($form) : '';
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            // Ensure Content-Length is set even for empty body (server returns 411 otherwise)
+            $headers[] = 'Content-Length: ' . strlen($body);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        } elseif ($method !== 'GET') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+            if ($form !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($form));
         }
         $raw = curl_exec($ch);
         $hSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
