@@ -355,6 +355,26 @@ function process_task(array $task): void {
 // ============================================================
 // MAIN
 // ============================================================
+$forcedTaskId = $_GET['task_id'] ?? null;
+
+if ($forcedTaskId) {
+    // Manuálne spustenie konkrétnej úlohy (z UI cez /tasks/{id}/run)
+    $r = sb_request('GET', '/tasks', null, 'select=*&id=eq.' . urlencode($forcedTaskId));
+    $rows = $r['json'];
+    if (!is_array($rows) || empty($rows)) {
+        echo "task not found\n";
+        exit;
+    }
+    $task = $rows[0];
+    // Prepni na running (bez ohľadu na predchádzajúci stav)
+    update_task($task['id'], ['status' => 'running', 'error_message' => null, 'updated_at' => gmdate('c')]);
+    $task['status'] = 'running';
+    echo "running task {$task['id']} (manual)\n";
+    process_task($task);
+    echo "done\n";
+    exit;
+}
+
 reset_stale_running_tasks(10);
 $task = claim_next_pending_task();
 if (!$task) {
@@ -364,3 +384,4 @@ if (!$task) {
 echo "running task {$task['id']}\n";
 process_task($task);
 echo "done\n";
+
