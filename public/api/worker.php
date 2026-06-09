@@ -263,29 +263,55 @@ function process_task(array $task): void {
         if ($client->lastStatus !== 200) {
             throw new RuntimeException("vignetteselected vrátil {$client->lastStatus}");
         }
-        log_step($id, 'select', 'Typ známky zvolený, formulár otvorený');
+        log_step($id, 'select', "Typ známky zvolený, effective_url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
 
-        // Z aktuálneho HTML formulára vytiahni VŠETKY skryté polia a defaulty
+        // Ak vignetteselected vrátil len redirect/potvrdzovaciu stránku bez polí, dotiahni reálny formulár
         $formHtml = $client->lastBody;
+        $formUrl = $client->lastUrl ?: (EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId);
+
+        $needsExtraGet = (substr_count($formHtml, '<input') < 5);
+        if ($needsExtraGet) {
+            // Skús GET na samotnú purchase stránku (po vignetteselected by mala zobraziť formulár)
+            $client->get(EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/', ['Referer: ' . $formUrl]);
+            log_step($id, 'form', "GET form page, status={$client->lastStatus}, url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
+            if ($client->lastStatus === 200 && substr_count($client->lastBody, '<input') >= 5) {
+                $formHtml = $client->lastBody;
+                $formUrl = $client->lastUrl;
+            }
+        }
+
+        // Vytiahni VŠETKY input polia (hidden + text + email + …) a select defaulty
         $hidden = [];
-        // Robustnejší parser - atribúty môžu byť v ľubovoľnom poradí
         if (preg_match_all('/<input\b[^>]*>/i', $formHtml, $inputs)) {
             foreach ($inputs[0] as $tag) {
-                if (!preg_match('/type\s*=\s*"hidden"/i', $tag)) continue;
                 if (!preg_match('/\bname\s*=\s*"([^"]+)"/i', $tag, $nm)) continue;
+                $type = '';
+                if (preg_match('/\btype\s*=\s*"([^"]+)"/i', $tag, $tm)) $type = strtolower($tm[1]);
+                if (in_array($type, ['submit', 'button', 'image', 'file'], true)) continue;
                 $val = '';
                 if (preg_match('/\bvalue\s*=\s*"([^"]*)"/i', $tag, $vm)) $val = $vm[1];
                 $hidden[$nm[1]] = html_entity_decode($val, ENT_QUOTES);
             }
         }
-        // Aktualizuj RVT z formulára (môže byť iný ako na /selfcare/purchase)
+        // Selecty: zober prvý <option ... selected> alebo prvý option
+        if (preg_match_all('/<select\b[^>]*\bname\s*=\s*"([^"]+)"[^>]*>([\s\S]*?)<\/select>/i', $formHtml, $sels, PREG_SET_ORDER)) {
+            foreach ($sels as $s) {
+                $name = $s[1]; $inner = $s[2]; $val = '';
+                if (preg_match('/<option[^>]*\bselected\b[^>]*\bvalue\s*=\s*"([^"]*)"/i', $inner, $om)) $val = $om[1];
+                elseif (preg_match('/<option[^>]*\bvalue\s*=\s*"([^"]*)"/i', $inner, $om)) $val = $om[1];
+                if (!isset($hidden[$name])) $hidden[$name] = html_entity_decode($val, ENT_QUOTES);
+            }
+        }
         if (isset($hidden['__RequestVerificationToken'])) {
             $rvt = $hidden['__RequestVerificationToken'];
         } else {
             $hidden['__RequestVerificationToken'] = $rvt;
         }
-        // ValidTo / Price / ValidityStart / ValidityEnd / IsFixed / IsLicensePlateNumberRequired bývajú v hidden
-        log_step($id, 'parse', 'Parsované skryté polia formulára', 'info', ['fields' => array_keys($hidden)]);
+        log_step($id, 'parse', 'Parsované polia formulára', 'info', [
+            'fields' => array_keys($hidden),
+            'form_url' => $formUrl,
+            'body_preview' => substr(strip_tags($formHtml), 0, 800),
+        ]);
 
         // --- 3. Rieš reCAPTCHA cez Capsolver
         log_step($id, 'captcha', 'Posielam reCAPTCHA do Capsolver…');
