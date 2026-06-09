@@ -226,6 +226,84 @@ function capsolver_solve_recaptcha_v2(string $pageUrl, string $sitekey): string 
 }
 
 // ============================================================
+// Kontrola platnosti diaľničnej známky (pred kúpou)
+// ============================================================
+function check_validity(EznamkaClient $client, string $taskId, array $task): array {
+    $checkUrl = EZNAMKA_BASE . '/selfcare/modification/select/select-vignettes/?operation=Check';
+    $client->get($checkUrl);
+    if ($client->lastStatus !== 200) {
+        throw new RuntimeException("GET kontrola vrátil {$client->lastStatus}");
+    }
+    $html = $client->lastBody;
+    // RVT (ak je vo formulári)
+    $rvt = '';
+    if (preg_match('/name="__RequestVerificationToken"[^>]+value="([^"]+)"/', $html, $m)) {
+        $rvt = $m[1];
+    }
+    log_step($taskId, 'validity-check', 'Načítaná stránka kontroly platnosti');
+
+    // reCAPTCHA
+    $captcha = capsolver_solve_recaptcha_v2($checkUrl, EZNAMKA_SITEKEY);
+
+    $form = [
+        'VignetteNumberRequired' => 'False',
+        'Operation'              => 'Check',
+        'LicensePlateNumber'     => $task['license_plate'],
+        'VehicleCountryCode'     => $task['country_code'],
+        'g-recaptcha-response'   => $captcha,
+    ];
+    if ($rvt !== '') $form['__RequestVerificationToken'] = $rvt;
+
+    $headers = [
+        'Referer: ' . $checkUrl,
+        'X-Requested-With: XMLHttpRequest',
+        'Accept: text/html, */*; q=0.01',
+    ];
+    if ($rvt !== '') {
+        $headers[] = 'RequestVerificationToken: ' . $rvt;
+        $headers[] = '__RequestVerificationToken: ' . $rvt;
+    }
+
+    $client->post(EZNAMKA_BASE . '/selfcare/modification/select/get-vignettes/', $form, $headers);
+    if ($client->lastStatus !== 200) {
+        throw new RuntimeException("POST get-vignettes vrátil {$client->lastStatus}");
+    }
+    $body = $client->lastBody;
+    $bodyPreview = substr(strip_tags($body), 0, 1500);
+
+    // Analyzuj odpoveď: hľadaj dátumy platnosti
+    $conflict = false;
+    $reasons = [];
+    $targetTs = strtotime($task['validity_date']);
+
+    // Vzor "Platná od DD.MM.YYYY do DD.MM.YYYY"
+    if (preg_match_all('/(\d{1,2}\.\s?\d{1,2}\.\s?\d{4})\s*(?:-|do|–)\s*(\d{1,2}\.\s?\d{1,2}\.\s?\d{4})/u', $body, $mm, PREG_SET_ORDER)) {
+        foreach ($mm as $row) {
+            $from = strtotime(str_replace(' ', '', $row[1]));
+            $to   = strtotime(str_replace(' ', '', $row[2]));
+            if ($from && $to && $targetTs >= $from && $targetTs <= $to) {
+                $conflict = true;
+                $reasons[] = "Existuje platná známka {$row[1]} – {$row[2]} pokrývajúca {$task['validity_date']}";
+            }
+        }
+    }
+
+    // Indikátory "žiadna známka"
+    $noVignette = (bool)preg_match('/nebol[ai]? nájden|neexistuj|žiadn[aé]\s+(diaľničn|známk)/iu', $body);
+
+    $summary = $conflict
+        ? implode('; ', $reasons)
+        : ($noVignette ? 'Žiadna platná známka — môžem kupovať' : 'Bez konfliktu pre cieľový dátum');
+
+    return [
+        'conflict'     => $conflict,
+        'summary'      => $summary,
+        'reasons'      => $reasons,
+        'body_preview' => $bodyPreview,
+    ];
+}
+
+// ============================================================
 // Hlavná logika pre 1 task
 // ============================================================
 function process_task(array $task): void {
@@ -242,6 +320,23 @@ function process_task(array $task): void {
     $client = new EznamkaClient($id);
     try {
         log_step($id, 'init', "Spúšťam automatizáciu pre $type, EČV {$task['license_plate']}");
+
+        // --- 0. KONTROLA PLATNOSTI pred kúpou
+        try {
+            $check = check_validity($client, $id, $task);
+            log_step($id, 'validity-check', $check['summary'], $check['conflict'] ? 'warning' : 'info', $check);
+            if ($check['conflict']) {
+                update_task($id, [
+                    'status' => 'failed',
+                    'error_message' => 'Kontrola platnosti: ' . $check['summary'],
+                    'updated_at' => gmdate('c'),
+                ]);
+                return;
+            }
+        } catch (Throwable $e) {
+            // Kontrolu nezablokujeme kúpu ak zlyhá — len zaloguj
+            log_step($id, 'validity-check', 'Kontrola platnosti zlyhala (pokračujem v kúpe): ' . $e->getMessage(), 'warning');
+        }
 
         // --- 1. GET /selfcare/purchase aby sme dostali __RequestVerificationToken + cookies
         $client->get(EZNAMKA_BASE . '/selfcare/purchase');
