@@ -116,6 +116,31 @@ function TaskDetailPage() {
     navigate({ to: "/tasks" });
   };
 
+  const handleRun = async () => {
+    if (!isExternalApiEnabled()) {
+      console.warn("[run] External API nie je nakonfigurované — manuálne spustenie nie je dostupné.");
+      alert("Manuálne spustenie vyžaduje nakonfigurované externé API.");
+      return;
+    }
+    setIsRunning(true);
+    console.log("[run] Spúšťam úlohu", taskId);
+    try {
+      const res = await externalTasksApi.runTask(taskId);
+      console.log("[run] Odpoveď zo servera:", res);
+      // Krátky delay aby worker stihol prepnúť status na running
+      setTimeout(() => {
+        console.log("[run] Refresh detailu úlohy + logov");
+        queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+        queryClient.invalidateQueries({ queryKey: ["task-logs", taskId] });
+      }, 800);
+    } catch (e) {
+      console.error("[run] Chyba pri spúšťaní úlohy:", e);
+      alert("Spustenie zlyhalo. Pozrite konzolu.");
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   const status = task ? (statusConfig[task.status] || statusConfig.pending) : null;
 
   return (
