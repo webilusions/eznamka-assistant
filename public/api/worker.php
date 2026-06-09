@@ -140,6 +140,7 @@ class EznamkaClient {
         $raw = curl_exec($ch);
         $hSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $this->lastStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $this->lastUrl = (string)curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         $rawHeaders = substr($raw, 0, $hSize);
         $this->lastBody = substr($raw, $hSize);
         $this->lastHeaders = [];
