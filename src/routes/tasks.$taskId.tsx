@@ -33,6 +33,7 @@ import {
   CreditCard,
   Trash2,
   ExternalLink,
+  Play,
 } from "lucide-react";
 import { getTask, getTaskLogs, getTaskScreenshots, deleteTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
