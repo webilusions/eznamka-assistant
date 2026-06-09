@@ -27,8 +27,8 @@ function supabase_request($method, $path, $body = null, $query = '') {
     $url = rtrim(SUPABASE_URL, '/') . '/rest/v1' . $path . ($query ? '?' . $query : '');
     $ch = curl_init($url);
     $headers = [
-        'apikey: ' . SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization: Bearer ' . SUPABASE_SERVICE_ROLE_KEY,
+        'apikey: ' . SUPABASE_API_KEY,
+        'Authorization: Bearer ' . SUPABASE_API_KEY,
         'Content-Type: application/json',
         'Prefer: return=representation',
     ];
