@@ -158,6 +158,20 @@ function TaskDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {task && task.status !== "completed" && (
+            <Button
+              variant="default"
+              onClick={handleRun}
+              disabled={isRunning || task.status === "running"}
+            >
+              {isRunning || task.status === "running" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="mr-2 h-4 w-4" />
+              )}
+              {task.status === "running" ? "Beží..." : "Spustiť teraz"}
+            </Button>
+          )}
           {task?.eznamka_checkout_url && (
             <a href={task.eznamka_checkout_url} target="_blank" rel="noopener noreferrer">
               <Button variant="outline">
