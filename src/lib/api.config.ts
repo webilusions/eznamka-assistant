@@ -12,7 +12,11 @@ function resolveApiBaseUrl(): string | undefined {
   if (typeof window === "undefined") return undefined;
 
   const host = window.location.hostname;
-  const isLovable = host.endsWith("lovable.app") || host.endsWith("lovable.dev");
+  const isLovable =
+    host.endsWith("lovable.app") ||
+    host.endsWith("lovable.dev") ||
+    host.endsWith("lovableproject.com") ||
+    host.endsWith("lovable.host");
   const isLocalDev = host === "localhost" || host === "127.0.0.1";
 
   // V Lovable preview a lokálnom dev nepoužívame externé API
