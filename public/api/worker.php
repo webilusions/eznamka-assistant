@@ -339,7 +339,7 @@ function process_task(array $task): void {
             EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/check/',
             $form,
             [
-                'Referer: ' . EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId,
+                'Referer: ' . $formUrl,
                 'X-Requested-With: XMLHttpRequest',
                 'Accept: application/json, text/javascript, */*; q=0.01',
                 'RequestVerificationToken: ' . $rvt,
