@@ -138,4 +138,32 @@ if (preg_match('#^/tasks/([a-f0-9-]+)/screenshots$#i', $path, $m) && $method ===
     exit;
 }
 
+// /tasks/{id}/run  — manuálne spustenie automatizácie pre konkrétnu úlohu
+if (preg_match('#^/tasks/([a-f0-9-]+)/run$#i', $path, $m) && $method === 'POST') {
+    $id = $m[1];
+    // Over existenciu
+    $r = supabase_request('GET', '/tasks', null, 'select=id&id=eq.' . urlencode($id));
+    $data = json_decode($r['body'], true);
+    if (empty($data)) json_error('Úloha nenájdená', 404);
+
+    // Zostav absolútnu URL workera (rovnaký host)
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $workerUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/api/worker.php'
+        . '?secret=' . urlencode(WORKER_SECRET)
+        . '&task_id=' . urlencode($id);
+
+    // Fire-and-forget: krátky timeout, worker beží ďalej na pozadí (ignore_user_abort)
+    $ch = curl_init($workerUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 2,
+        CURLOPT_CONNECTTIMEOUT => 2,
+        CURLOPT_NOSIGNAL => 1,
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
+
+    json_response(['success' => true, 'message' => 'Spúšťam automatizáciu na pozadí']);
+}
+
 json_error('Endpoint nenájdený: ' . $method . ' ' . $path, 404);

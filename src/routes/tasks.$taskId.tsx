@@ -1,6 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 
@@ -32,6 +33,7 @@ import {
   CreditCard,
   Trash2,
   ExternalLink,
+  Play,
 } from "lucide-react";
 import { getTask, getTaskLogs, getTaskScreenshots, deleteTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
@@ -73,6 +75,8 @@ export const Route = createFileRoute("/tasks/$taskId")({
 function TaskDetailPage() {
   const { taskId } = useParams({ from: "/tasks/$taskId" });
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [isRunning, setIsRunning] = useState(false);
 
   const fetchTask = useServerFn(getTask);
   const fetchLogs = useServerFn(getTaskLogs);
@@ -82,11 +86,19 @@ function TaskDetailPage() {
   const { data: task, isLoading: taskLoading } = useQuery({
     queryKey: ["task", taskId],
     queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTask(taskId) : fetchTask({ data: { id: taskId } }),
+    refetchInterval: (q) => {
+      const s = (q.state.data as any)?.status;
+      return s === "running" || s === "pending" ? 3000 : false;
+    },
   });
 
   const { data: logs = [], isLoading: logsLoading } = useQuery({
     queryKey: ["task-logs", taskId],
     queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTaskLogs(taskId) : fetchLogs({ data: { taskId } }),
+    refetchInterval: (q) => {
+      const s = (task as any)?.status;
+      return s === "running" || s === "pending" ? 3000 : false;
+    },
   });
 
   const { data: screenshots = [], isLoading: screenshotsLoading } = useQuery({
@@ -102,6 +114,31 @@ function TaskDetailPage() {
       await deleteTaskFn({ data: { id: taskId } });
     }
     navigate({ to: "/tasks" });
+  };
+
+  const handleRun = async () => {
+    if (!isExternalApiEnabled()) {
+      console.warn("[run] External API nie je nakonfigurované — manuálne spustenie nie je dostupné.");
+      alert("Manuálne spustenie vyžaduje nakonfigurované externé API.");
+      return;
+    }
+    setIsRunning(true);
+    console.log("[run] Spúšťam úlohu", taskId);
+    try {
+      const res = await externalTasksApi.runTask(taskId);
+      console.log("[run] Odpoveď zo servera:", res);
+      // Krátky delay aby worker stihol prepnúť status na running
+      setTimeout(() => {
+        console.log("[run] Refresh detailu úlohy + logov");
+        queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+        queryClient.invalidateQueries({ queryKey: ["task-logs", taskId] });
+      }, 800);
+    } catch (e) {
+      console.error("[run] Chyba pri spúšťaní úlohy:", e);
+      alert("Spustenie zlyhalo. Pozrite konzolu.");
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const status = task ? (statusConfig[task.status] || statusConfig.pending) : null;
@@ -121,6 +158,20 @@ function TaskDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {task && task.status !== "completed" && (
+            <Button
+              variant="default"
+              onClick={handleRun}
+              disabled={isRunning || task.status === "running"}
+            >
+              {isRunning || task.status === "running" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="mr-2 h-4 w-4" />
+              )}
+              {task.status === "running" ? "Beží..." : "Spustiť teraz"}
+            </Button>
+          )}
           {task?.eznamka_checkout_url && (
             <a href={task.eznamka_checkout_url} target="_blank" rel="noopener noreferrer">
               <Button variant="outline">
