@@ -34,6 +34,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { getTask, getTaskLogs, getTaskScreenshots, deleteTask } from "@/lib/tasks.functions";
+import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 import { useNavigate } from "@tanstack/react-router";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning"; icon: React.ReactNode; description: string }> = {
@@ -80,22 +81,26 @@ function TaskDetailPage() {
 
   const { data: task, isLoading: taskLoading } = useQuery({
     queryKey: ["task", taskId],
-    queryFn: () => fetchTask({ data: { id: taskId } }),
+    queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTask(taskId) : fetchTask({ data: { id: taskId } }),
   });
 
   const { data: logs = [], isLoading: logsLoading } = useQuery({
     queryKey: ["task-logs", taskId],
-    queryFn: () => fetchLogs({ data: { taskId } }),
+    queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTaskLogs(taskId) : fetchLogs({ data: { taskId } }),
   });
 
   const { data: screenshots = [], isLoading: screenshotsLoading } = useQuery({
     queryKey: ["task-screenshots", taskId],
-    queryFn: () => fetchScreenshots({ data: { taskId } }),
+    queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTaskScreenshots(taskId) : fetchScreenshots({ data: { taskId } }),
   });
 
   const handleDelete = async () => {
     if (!confirm("Naozaj chcete odstrániť túto úlohu?")) return;
-    await deleteTaskFn({ data: { id: taskId } });
+    if (isExternalApiEnabled()) {
+      await externalTasksApi.deleteTask(taskId);
+    } else {
+      await deleteTaskFn({ data: { id: taskId } });
+    }
     navigate({ to: "/tasks" });
   };
 

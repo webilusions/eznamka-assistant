@@ -27,6 +27,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { getTasks } from "@/lib/tasks.functions";
+import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning"; icon: React.ReactNode }> = {
   pending: { label: "Čaká sa", variant: "secondary", icon: <Clock className="h-3.5 w-3.5" /> },
@@ -58,7 +59,7 @@ function TasksDashboard() {
   const fetchTasks = useServerFn(getTasks);
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["tasks"],
-    queryFn: () => fetchTasks(),
+    queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTasks() : fetchTasks(),
   });
 
   return (

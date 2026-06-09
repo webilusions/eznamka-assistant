@@ -24,6 +24,7 @@ import { format, addDays } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
+import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
 const formSchema = z.object({
   licensePlate: z
@@ -86,18 +87,21 @@ function VehicleFormPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: createTaskFn,
+    mutationFn: (variables: { data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string } }) =>
+      isExternalApiEnabled() ? externalTasksApi.createTask(variables.data) : createTaskFn(variables),
     onSuccess: (data) => {
       navigate({ to: "/tasks/$taskId", params: { taskId: data.id } });
     },
   });
 
   const onSubmit = async (values: FormValues) => {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate({ to: "/auth" });
-      return;
+    if (!isExternalApiEnabled()) {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate({ to: "/auth" });
+        return;
+      }
     }
     mutation.mutate({
       data: {

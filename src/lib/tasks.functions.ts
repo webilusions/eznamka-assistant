@@ -1,25 +1,6 @@
-import { API_BASE_URL, USE_EXTERNAL_API } from "./api.config";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-// ====== External API helpers ======
-
-async function apiFetch(path: string, options?: RequestInit) {
-  const url = `${API_BASE_URL}${path}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Neznáma chyba" }));
-    throw new Error(err.error || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
 
 // ====== Server Functions (Lovable Cloud mode) ======
 
@@ -35,13 +16,6 @@ export const createTask = createServerFn({ method: "POST" })
     }).parse(data);
   })
   .handler(async ({ data, context }) => {
-    if (USE_EXTERNAL_API) {
-      return apiFetch("/tasks", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
-    }
-
     const { supabase, userId } = context;
     const { data: task, error } = await supabase
       .from("tasks")
@@ -64,10 +38,6 @@ export const createTask = createServerFn({ method: "POST" })
 export const getTasks = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    if (USE_EXTERNAL_API) {
-      return apiFetch("/tasks");
-    }
-
     const { data: tasks, error } = await context.supabase
       .from("tasks")
       .select("*")
@@ -83,10 +53,6 @@ export const getTask = createServerFn({ method: "GET" })
     return z.object({ id: z.string().uuid() }).parse(data);
   })
   .handler(async ({ data, context }) => {
-    if (USE_EXTERNAL_API) {
-      return apiFetch(`/tasks/${data.id}`);
-    }
-
     const { data: task, error } = await context.supabase
       .from("tasks")
       .select("*")
@@ -104,10 +70,6 @@ export const getTaskLogs = createServerFn({ method: "GET" })
     return z.object({ taskId: z.string().uuid() }).parse(data);
   })
   .handler(async ({ data, context }) => {
-    if (USE_EXTERNAL_API) {
-      return apiFetch(`/tasks/${data.taskId}/logs`);
-    }
-
     const { data: logs, error } = await context.supabase
       .from("task_logs")
       .select("*")
@@ -124,10 +86,6 @@ export const getTaskScreenshots = createServerFn({ method: "GET" })
     return z.object({ taskId: z.string().uuid() }).parse(data);
   })
   .handler(async ({ data, context }) => {
-    if (USE_EXTERNAL_API) {
-      return apiFetch(`/tasks/${data.taskId}/screenshots`);
-    }
-
     const { data: screenshots, error } = await context.supabase
       .from("task_screenshots")
       .select("*")
@@ -144,10 +102,6 @@ export const deleteTask = createServerFn({ method: "POST" })
     return z.object({ id: z.string().uuid() }).parse(data);
   })
   .handler(async ({ data, context }) => {
-    if (USE_EXTERNAL_API) {
-      return apiFetch(`/tasks/${data.id}`, { method: "DELETE" });
-    }
-
     const { error } = await context.supabase
       .from("tasks")
       .delete()
