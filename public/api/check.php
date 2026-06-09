@@ -14,7 +14,6 @@
  */
 
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/worker.php' === false ? '' : ''; // no-op (worker.php má side-effects)
 
 header('Access-Control-Allow-Origin: ' . CORS_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
