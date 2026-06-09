@@ -24,7 +24,7 @@ $VIGNETTE_IDS = [
     '1year'  => 1060,  // Ročná
     '1month' => 0,     // TODO: doplniť (mesačná)
     '10day'  => 0,     // TODO: doplniť (10-dňová)
-    '1day'   => 0,     // TODO: doplniť (jednodňová)
+    '1day'   => 1066,  // Jednodňová
 ];
 
 // Cesta k súboru kde sa ukladajú cookies pre eznamka session (musí byť zapisovateľná)
