@@ -67,6 +67,17 @@ function update_task(string $taskId, array $patch): void {
 }
 
 // Atomicky claimne 1 pending task (Postgres RETURNING).
+function reset_stale_running_tasks(int $maxAgeMinutes = 10): void {
+    // Úlohy zaseknuté v stave 'running' dlhšie ako N minút vráť na 'pending'
+    $cutoff = gmdate('c', time() - $maxAgeMinutes * 60);
+    sb_request(
+        'PATCH',
+        '/tasks',
+        ['status' => 'pending', 'error_message' => 'Auto-reset: predchádzajúci beh neskončil', 'updated_at' => gmdate('c')],
+        'status=eq.running&updated_at=lt.' . rawurlencode($cutoff)
+    );
+}
+
 function claim_next_pending_task(): ?array {
     // PATCH s filtrom status=eq.pending + LIMIT 1 (cez ?limit=1 v PostgREST)
     $r = sb_request(
