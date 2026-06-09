@@ -97,7 +97,7 @@ export type Database = {
           license_plate: string
           status: Database["public"]["Enums"]["task_status"]
           updated_at: string
-          user_id: string
+          user_id: string | null
           validity_date: string
           vignette_type: string
         }
@@ -113,7 +113,7 @@ export type Database = {
           license_plate: string
           status?: Database["public"]["Enums"]["task_status"]
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           validity_date: string
           vignette_type: string
         }
@@ -129,7 +129,7 @@ export type Database = {
           license_plate?: string
           status?: Database["public"]["Enums"]["task_status"]
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           validity_date?: string
           vignette_type?: string
         }
