@@ -241,10 +241,10 @@ function process_task(array $task): void {
         $rvt = $m[1];
         log_step($id, 'session', 'Session + RVT získané');
 
-        // --- 2. POST vignetteselected
+        // --- 2. POST vignetteselected (empty body, vignetteId is in query string per HAR)
         $client->post(
             EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId,
-            ['VignetteId' => $vignetteId, '__RequestVerificationToken' => $rvt],
+            [],
             ['Referer: ' . EZNAMKA_BASE . '/selfcare/purchase']
         );
         if ($client->lastStatus !== 200) {
