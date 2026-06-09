@@ -1,7 +1,7 @@
 import { API_BASE_URL, USE_EXTERNAL_API } from "./api.config";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // ====== External API helpers ======
 
@@ -24,6 +24,7 @@ async function apiFetch(path: string, options?: RequestInit) {
 // ====== Server Functions (Lovable Cloud mode) ======
 
 export const createTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string }) => {
     return z.object({
       licensePlate: z.string().min(3).max(15),
@@ -33,7 +34,7 @@ export const createTask = createServerFn({ method: "POST" })
       email: z.string().email(),
     }).parse(data);
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     if (USE_EXTERNAL_API) {
       return apiFetch("/tasks", {
         method: "POST",
@@ -41,10 +42,11 @@ export const createTask = createServerFn({ method: "POST" })
       });
     }
 
-    const { data: task, error } = await supabaseAdmin
+    const { supabase, userId } = context;
+    const { data: task, error } = await supabase
       .from("tasks")
       .insert({
-        user_id: "00000000-0000-0000-0000-000000000000",
+        user_id: userId,
         license_plate: data.licensePlate,
         country_code: data.countryCode,
         vignette_type: data.vignetteType,
@@ -60,12 +62,13 @@ export const createTask = createServerFn({ method: "POST" })
   });
 
 export const getTasks = createServerFn({ method: "GET" })
-  .handler(async () => {
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
     if (USE_EXTERNAL_API) {
       return apiFetch("/tasks");
     }
 
-    const { data: tasks, error } = await supabaseAdmin
+    const { data: tasks, error } = await context.supabase
       .from("tasks")
       .select("*")
       .order("created_at", { ascending: false });
@@ -75,15 +78,16 @@ export const getTasks = createServerFn({ method: "GET" })
   });
 
 export const getTask = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string }) => {
     return z.object({ id: z.string().uuid() }).parse(data);
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     if (USE_EXTERNAL_API) {
       return apiFetch(`/tasks/${data.id}`);
     }
 
-    const { data: task, error } = await supabaseAdmin
+    const { data: task, error } = await context.supabase
       .from("tasks")
       .select("*")
       .eq("id", data.id)
@@ -95,15 +99,16 @@ export const getTask = createServerFn({ method: "GET" })
   });
 
 export const getTaskLogs = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { taskId: string }) => {
     return z.object({ taskId: z.string().uuid() }).parse(data);
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     if (USE_EXTERNAL_API) {
       return apiFetch(`/tasks/${data.taskId}/logs`);
     }
 
-    const { data: logs, error } = await supabaseAdmin
+    const { data: logs, error } = await context.supabase
       .from("task_logs")
       .select("*")
       .eq("task_id", data.taskId)
@@ -114,15 +119,16 @@ export const getTaskLogs = createServerFn({ method: "GET" })
   });
 
 export const getTaskScreenshots = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { taskId: string }) => {
     return z.object({ taskId: z.string().uuid() }).parse(data);
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     if (USE_EXTERNAL_API) {
       return apiFetch(`/tasks/${data.taskId}/screenshots`);
     }
 
-    const { data: screenshots, error } = await supabaseAdmin
+    const { data: screenshots, error } = await context.supabase
       .from("task_screenshots")
       .select("*")
       .eq("task_id", data.taskId)
@@ -133,15 +139,16 @@ export const getTaskScreenshots = createServerFn({ method: "GET" })
   });
 
 export const deleteTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string }) => {
     return z.object({ id: z.string().uuid() }).parse(data);
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     if (USE_EXTERNAL_API) {
       return apiFetch(`/tasks/${data.id}`, { method: "DELETE" });
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await context.supabase
       .from("tasks")
       .delete()
       .eq("id", data.id);
