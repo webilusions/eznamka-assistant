@@ -22,7 +22,7 @@ define('EZNAMKA_SITEKEY', '6LfHAjkUAAAAADameCOtUdnICQbHOiH4Xqt1lMAw');
 // pre každý typ a doplň sem. Známe: 1year=1060
 $VIGNETTE_IDS = [
     '1year'  => 1060,  // Ročná
-    '1month' => 0,     // TODO: doplniť (mesačná)
+    '1month' => 1062,  // 30-dňová
     '10day'  => 1064,  // 10-dňová
     '1day'   => 1066,  // Jednodňová
 ];
