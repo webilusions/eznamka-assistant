@@ -43,4 +43,5 @@ export const externalTasksApi = {
   getTaskLogs: (taskId: string) => apiFetch<any[]>(`/tasks/${taskId}/logs`),
   getTaskScreenshots: (taskId: string) => apiFetch<any[]>(`/tasks/${taskId}/screenshots`),
   deleteTask: (id: string) => apiFetch<{ success: boolean }>(`/tasks/${id}`, { method: "DELETE" }),
+  runTask: (id: string) => apiFetch<{ success: boolean; message: string }>(`/tasks/${id}/run`, { method: "POST" }),
 };
