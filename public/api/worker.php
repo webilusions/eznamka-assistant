@@ -355,6 +355,7 @@ function process_task(array $task): void {
 // ============================================================
 // MAIN
 // ============================================================
+reset_stale_running_tasks(10);
 $task = claim_next_pending_task();
 if (!$task) {
     echo "no pending tasks\n";
