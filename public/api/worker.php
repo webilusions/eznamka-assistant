@@ -321,23 +321,6 @@ function process_task(array $task): void {
     try {
         log_step($id, 'init', "Spúšťam automatizáciu pre $type, EČV {$task['license_plate']}");
 
-        // --- 0. KONTROLA PLATNOSTI pred kúpou
-        try {
-            $check = check_validity($client, $id, $task);
-            log_step($id, 'validity-check', $check['summary'], $check['conflict'] ? 'warning' : 'info', $check);
-            if ($check['conflict']) {
-                update_task($id, [
-                    'status' => 'failed',
-                    'error_message' => 'Kontrola platnosti: ' . $check['summary'],
-                    'updated_at' => gmdate('c'),
-                ]);
-                return;
-            }
-        } catch (Throwable $e) {
-            // Kontrolu nezablokujeme kúpu ak zlyhá — len zaloguj
-            log_step($id, 'validity-check', 'Kontrola platnosti zlyhala (pokračujem v kúpe): ' . $e->getMessage(), 'warning');
-        }
-
         // --- 1. GET /selfcare/purchase aby sme dostali __RequestVerificationToken + cookies
         $client->get(EZNAMKA_BASE . '/selfcare/purchase');
         if ($client->lastStatus !== 200) {
