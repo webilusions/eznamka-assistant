@@ -101,6 +101,7 @@ class EznamkaClient {
     public string $lastBody = '';
     public int $lastStatus = 0;
     public array $lastHeaders = [];
+    public string $lastUrl = '';
 
     public function __construct(string $taskId) {
         $this->jar = COOKIE_DIR . '/' . preg_replace('/[^a-f0-9-]/i', '', $taskId) . '.cookie';
