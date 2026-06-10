@@ -223,6 +223,50 @@ function TaskDetailPage() {
             </CardContent>
           </Card>
 
+          {/* QR platba */}
+          {task.payment_qr_base64 && (
+            <Card className="border-l-4 border-l-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  Platba cez TatraPay
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+                  <img
+                    src={task.payment_qr_base64}
+                    alt="QR kód pre platbu"
+                    className="h-48 w-48 rounded-md border bg-white p-2"
+                  />
+                  <div className="flex-1 space-y-2 text-sm">
+                    <p className="font-semibold">QR kód načítajte v aplikácii Tatra banka</p>
+                    <p className="text-muted-foreground">
+                      V aplikácii Tatra banka vyberte možnosť „Skenovať IBAN/QR kód" v platbe.
+                    </p>
+                    {task.payment_amount && (
+                      <p className="text-base">
+                        <span className="text-muted-foreground">Suma:</span>{" "}
+                        <strong>{task.payment_amount}</strong>
+                      </p>
+                    )}
+                    {task.payment_url && (
+                      <a
+                        href={task.payment_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Otvoriť platobnú stránku
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Vehicle info */}
           <Card>
             <CardHeader>
