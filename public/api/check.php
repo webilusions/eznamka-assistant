@@ -222,7 +222,7 @@ try {
             $toExt = strtotime(($year + 1) . "-01-31");
             if ($targetTs >= $from && $targetTs <= $toExt) {
                 $conflict = true;
-                $reasons[] = "Ročná známka {$year} pokrýva {$date}";
+                $reasons[] = "Ročná známka {$year}";
             }
         }
     }
