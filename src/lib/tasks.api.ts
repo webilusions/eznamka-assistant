@@ -44,4 +44,9 @@ export const externalTasksApi = {
   getTaskScreenshots: (taskId: string) => apiFetch<any[]>(`/tasks/${taskId}/screenshots`),
   deleteTask: (id: string) => apiFetch<{ success: boolean }>(`/tasks/${id}`, { method: "DELETE" }),
   runTask: (id: string) => apiFetch<{ success: boolean; message: string }>(`/tasks/${id}/run`, { method: "POST" }),
+  checkValidity: (data: { licensePlate: string; countryCode: string; validityDate?: string }) =>
+    apiFetch<{ conflict: boolean; summary: string; reasons?: string[]; vignettes?: any[]; body_preview?: string }>("/check", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
