@@ -185,7 +185,7 @@ function CheckValidityPage() {
                         <p className="text-sm font-medium text-warning-foreground">
                           Zistený konflikt
                         </p>
-                        <p className="text-sm text-muted-foreground">{result.summary}</p>
+                        
                         {result.reasons && result.reasons.length > 0 && (
                           <ul className="mt-2 space-y-1">
                             {result.reasons.map((reason, i) => (
