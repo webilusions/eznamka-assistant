@@ -104,8 +104,8 @@ const vignetteDurationDays: Record<string, number> = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Nová úloha — eZnamka Automatizácia" },
-      { name: "description", content: "Vytvorte novú úlohu automatizácie nákupu diaľničnej známky" },
+      { title: "Nákup známky — eZnamka Automatizácia" },
+      { name: "description", content: "Pripravte nákup diaľničnej známky cez automatizáciu" },
     ],
   }),
   component: VehicleFormPage,
@@ -169,7 +169,7 @@ function VehicleFormPage() {
           <Car className="h-7 w-7 text-primary" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Nová úloha
+          Nákup známky
         </h1>
         <p className="mt-2 text-muted-foreground">
           Zadajte údaje o vozidle a pripravíme nákup diaľničnej známky

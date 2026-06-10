@@ -76,7 +76,7 @@ function TasksDashboard() {
         <Link to="/">
           <Button>
             <Play className="mr-2 h-4 w-4" />
-            Nová úloha
+            Nákup známky
           </Button>
         </Link>
       </div>

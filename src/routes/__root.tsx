@@ -173,7 +173,7 @@ function RootComponent() {
               <NavLink to="/check" icon={<ShieldCheck className="h-4 w-4" />} label="Overenie platnosti známky" />
               {session && (
                 <>
-                  <NavLink to="/" icon={<Play className="h-4 w-4" />} label="Nová úloha" />
+                  <NavLink to="/" icon={<Play className="h-4 w-4" />} label="Nákup známky" />
                   <NavLink to="/tasks" icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
                 </>
               )}
@@ -226,7 +226,7 @@ function RootComponent() {
               <MobileNavLink to="/check" onClick={() => setMobileMenuOpen(false)} icon={<ShieldCheck className="h-4 w-4" />} label="Overenie platnosti známky" />
               {session ? (
                 <>
-                  <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)} icon={<Play className="h-4 w-4" />} label="Nová úloha" />
+                  <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)} icon={<Play className="h-4 w-4" />} label="Nákup známky" />
                   <MobileNavLink to="/tasks" onClick={() => setMobileMenuOpen(false)} icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
                   <div className="border-t pt-2 mt-2">
                     <button
