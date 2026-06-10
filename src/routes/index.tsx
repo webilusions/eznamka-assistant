@@ -41,17 +41,12 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const countries = [
-  { code: "SK", name: "Slovensko" },
-  { code: "CZ", name: "Česká republika" },
-  { code: "AT", name: "Rakúsko" },
-  { code: "DE", name: "Nemecko" },
-  { code: "HU", name: "Maďarsko" },
-  { code: "PL", name: "Poľsko" },
-  { code: "RO", name: "Rumunsko" },
-  { code: "BG", name: "Bulharsko" },
-  { code: "HR", name: "Chorvátsko" },
-  { code: "SI", name: "Slovinsko" },
-  { code: "OTHER", name: "Iná krajina" },
+  { code: "SK", name: "Slovensko", flag: "🇸🇰" },
+  { code: "CZ", name: "Česká republika", flag: "🇨🇿" },
+  { code: "HU", name: "Maďarsko", flag: "🇭🇺" },
+  { code: "PL", name: "Poľsko", flag: "🇵🇱" },
+  { code: "UA", name: "Ukrajina", flag: "🇺🇦" },
+  { code: "AT", name: "Rakúsko", flag: "🇦🇹" },
 ];
 
 const vignetteTypes = [
@@ -198,6 +193,7 @@ function VehicleFormPage() {
                       <SelectContent>
                         {countries.map((c) => (
                           <SelectItem key={c.code} value={c.code}>
+                            <span className="mr-2">{c.flag}</span>
                             {c.name}
                           </SelectItem>
                         ))}
