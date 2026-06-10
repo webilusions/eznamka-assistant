@@ -161,7 +161,9 @@ function VehicleFormPage() {
                 name="countryCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Krajina registrácie</FormLabel>
+                    <FormLabel>
+                      Krajina registrácie vozidla <span className="text-destructive">*</span>
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -176,6 +178,25 @@ function VehicleFormPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {quickCountries.map((c) => (
+                        <button
+                          key={c.code}
+                          type="button"
+                          onClick={() => field.onChange(c.code)}
+                          aria-label={c.name}
+                          title={c.name}
+                          className={cn(
+                            "flex h-9 w-12 items-center justify-center rounded-md border text-xl transition",
+                            field.value === c.code
+                              ? "border-primary ring-2 ring-primary/30"
+                              : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          {c.flag}
+                        </button>
+                      ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -206,12 +227,20 @@ function VehicleFormPage() {
                 )}
               />
 
+              <div className="pt-2">
+                <h3 className="text-base font-semibold text-primary">
+                  Platnosť diaľničnej známky
+                </h3>
+              </div>
+
               <FormField
                 control={form.control}
                 name="validityDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Dátum začiatku platnosti</FormLabel>
+                    <FormLabel>
+                      Platná od <span className="text-destructive">*</span>
+                    </FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -223,7 +252,7 @@ function VehicleFormPage() {
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "d. MMMM yyyy", { locale: sk })
+                              format(field.value, "dd.MM.yyyy", { locale: sk })
                             ) : (
                               <span>Vyberte dátum</span>
                             )}
@@ -239,6 +268,7 @@ function VehicleFormPage() {
                           disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                           locale={sk}
                           initialFocus
+                          className="pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
@@ -246,6 +276,30 @@ function VehicleFormPage() {
                   </FormItem>
                 )}
               />
+
+              <FormItem>
+                <FormLabel className="flex items-center gap-1">
+                  Platná do
+                  <span className="text-warning">**</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    readOnly
+                    disabled
+                    value={
+                      validUntil
+                        ? format(validUntil, "dd.MM.yyyy", { locale: sk })
+                        : ""
+                    }
+                    placeholder="—"
+                    className="bg-muted"
+                  />
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  ** automaticky vypočítané podľa typu známky
+                </p>
+              </FormItem>
+
 
               <FormField
                 control={form.control}
