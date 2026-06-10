@@ -7,14 +7,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Car, ShieldCheck, ShieldAlert, Loader2, AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react";
-import { format, addDays } from "date-fns";
-import { sk } from "date-fns/locale";
+import { Car, ShieldCheck, ShieldAlert, Loader2, AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
