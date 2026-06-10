@@ -7,14 +7,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Car, ShieldCheck, ShieldAlert, Loader2, AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react";
-import { format, addDays } from "date-fns";
-import { sk } from "date-fns/locale";
+import { Car, ShieldCheck, ShieldAlert, Loader2, AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
@@ -25,7 +21,6 @@ const formSchema = z.object({
     .max(15, "EČV je príliš dlhá")
     .regex(/^[A-Z0-9\- ]+$/i, "Neplatný formát EČV"),
   countryCode: z.string().min(1, "Vyberte krajinu registrácie"),
-  validityDate: z.date().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -69,7 +64,6 @@ function CheckValidityPage() {
     defaultValues: {
       licensePlate: "",
       countryCode: "",
-      validityDate: addDays(new Date(), 1),
     },
   });
 
@@ -86,7 +80,6 @@ function CheckValidityPage() {
       const data = await externalTasksApi.checkValidity({
         licensePlate: values.licensePlate.toUpperCase().trim(),
         countryCode: values.countryCode,
-        validityDate: values.validityDate ? values.validityDate.toISOString().split("T")[0] : undefined,
       });
 
       setResult(data);
@@ -164,46 +157,6 @@ function CheckValidityPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="validityDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Dátum začiatku platnosti (nepovinné)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "d. MMMM yyyy", { locale: sk })
-                            ) : (
-                              <span>Dnes</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                          locale={sk}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               {error && (
                 <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">
