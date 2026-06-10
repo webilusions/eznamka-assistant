@@ -68,7 +68,6 @@ function CheckValidityPage() {
     defaultValues: {
       licensePlate: "",
       countryCode: "",
-      validityDate: addDays(new Date(), 1),
     },
   });
 
