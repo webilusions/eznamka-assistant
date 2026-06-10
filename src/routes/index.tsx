@@ -302,28 +302,27 @@ function VehicleFormPage() {
                 )}
               />
 
-              <FormItem>
-                <FormLabel className="flex items-center gap-1">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1">
                   Platná do
                   <span className="text-warning">**</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    readOnly
-                    disabled
-                    value={
-                      validUntil
-                        ? format(validUntil, "dd.MM.yyyy", { locale: sk })
-                        : ""
-                    }
-                    placeholder="—"
-                    className="bg-muted"
-                  />
-                </FormControl>
+                </Label>
+                <Input
+                  readOnly
+                  disabled
+                  value={
+                    validUntil
+                      ? format(validUntil, "dd.MM.yyyy", { locale: sk })
+                      : ""
+                  }
+                  placeholder="—"
+                  className="bg-muted"
+                />
                 <p className="text-xs text-muted-foreground">
                   ** automaticky vypočítané podľa typu známky
                 </p>
-              </FormItem>
+              </div>
+
 
 
               <FormField
