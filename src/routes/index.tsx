@@ -50,10 +50,38 @@ const countries = [
 ];
 
 const vignetteTypes = [
-  { value: "1year", label: "Ročná známka (1 rok)" },
-  { value: "1month", label: "Mesačná známka (30 dní)" },
-  { value: "10day", label: "10-dňová známka" },
-  { value: "1day", label: "Jednodňová známka" },
+  {
+    value: "1year",
+    title: "365-DŇOVÁ 2026",
+    badge: "365/D",
+    badgeClass: "bg-[#1e4a7a] text-white",
+    validity: "365 dní od začiatku platnosti",
+    price: "90,00 EUR",
+  },
+  {
+    value: "1month",
+    title: "30-DŇOVÁ 2026",
+    badge: "30/D",
+    badgeClass: "bg-[#5bb3e4] text-white",
+    validity: "30 dní od začiatku platnosti",
+    price: "17,10 EUR",
+  },
+  {
+    value: "10day",
+    title: "10-DŇOVÁ 2026",
+    badge: "10/D",
+    badgeClass: "bg-[#9ca3af] text-white",
+    validity: "10 dní od začiatku platnosti",
+    price: "10,80 EUR",
+  },
+  {
+    value: "1day",
+    title: "1-DŇOVÁ 2026",
+    badge: "1/D",
+    badgeClass: "bg-[#f5a623] text-white",
+    validity: "1 deň od začiatku platnosti",
+    price: "8,10 EUR",
+  },
 ];
 
 const quickCountries = [
