@@ -68,6 +68,12 @@ if ($path === '/health' && $method === 'GET') {
     json_response(['ok' => true]);
 }
 
+// /check — samostatná kontrola platnosti diaľničnej známky
+if ($path === '/check' && $method === 'POST') {
+    require __DIR__ . '/check.php';
+    exit;
+}
+
 // /tasks
 if ($path === '/tasks' && $method === 'GET') {
     $r = supabase_request('GET', '/tasks', null, 'select=*&order=created_at.desc');
