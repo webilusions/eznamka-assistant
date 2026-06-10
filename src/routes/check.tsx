@@ -84,7 +84,6 @@ function CheckValidityPage() {
       const data = await externalTasksApi.checkValidity({
         licensePlate: values.licensePlate.toUpperCase().trim(),
         countryCode: values.countryCode,
-        validityDate: values.validityDate ? values.validityDate.toISOString().split("T")[0] : undefined,
       });
 
       setResult(data);
