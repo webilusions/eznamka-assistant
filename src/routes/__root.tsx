@@ -170,11 +170,11 @@ function RootComponent() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-1">
+              <NavLink to="/check" icon={<ShieldCheck className="h-4 w-4" />} label="Overenie platnosti známky" />
               {session && (
                 <>
                   <NavLink to="/" icon={<Play className="h-4 w-4" />} label="Nová úloha" />
                   <NavLink to="/tasks" icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
-                  <NavLink to="/check" icon={<ShieldCheck className="h-4 w-4" />} label="Kontrola platnosti" />
                 </>
               )}
             </nav>
