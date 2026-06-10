@@ -29,6 +29,7 @@ import {
   Menu,
   X,
   Play,
+  ShieldCheck,
 } from "lucide-react";
 
 function NotFoundComponent() {
@@ -156,10 +157,12 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen flex flex-col">
-        <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
+        <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-2">
-              <Car className="h-6 w-6 text-primary" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <Car className="h-5 w-5 text-primary-foreground" />
+              </div>
               <Link to="/" className="text-lg font-bold tracking-tight text-foreground">
                 eZnamka<span className="text-primary">Bot</span>
               </Link>
@@ -169,22 +172,9 @@ function RootComponent() {
             <nav className="hidden md:flex items-center gap-1">
               {session && (
                 <>
-                  <Link
-                    to="/"
-                    activeProps={{ className: "bg-accent text-accent-foreground" }}
-                    className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <Play className="h-4 w-4" />
-                    Nová úloha
-                  </Link>
-                  <Link
-                    to="/tasks"
-                    activeProps={{ className: "bg-accent text-accent-foreground" }}
-                    className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    Úlohy
-                  </Link>
+                  <NavLink to="/" icon={<Play className="h-4 w-4" />} label="Nová úloha" />
+                  <NavLink to="/tasks" icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
+                  <NavLink to="/check" icon={<ShieldCheck className="h-4 w-4" />} label="Kontrola platnosti" />
                 </>
               )}
             </nav>
@@ -194,7 +184,7 @@ function RootComponent() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                      <Avatar className="h-9 w-9">
+                      <Avatar className="h-9 w-9 border border-border">
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
                           {userInitial}
                         </AvatarFallback>
@@ -222,8 +212,9 @@ function RootComponent() {
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent"
+              className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Zavrieť menu" : "Otvoriť menu"}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -231,32 +222,19 @@ function RootComponent() {
 
           {/* Mobile nav */}
           {mobileMenuOpen && (
-            <div className="md:hidden border-t bg-card px-4 py-3 space-y-1">
+            <div className="md:hidden border-t bg-background px-4 py-3 space-y-1">
               {session ? (
                 <>
-                  <Link
-                    to="/"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
-                  >
-                    <Play className="h-4 w-4" />
-                    Nová úloha
-                  </Link>
-                  <Link
-                    to="/tasks"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    Úlohy
-                  </Link>
+                  <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)} icon={<Play className="h-4 w-4" />} label="Nová úloha" />
+                  <MobileNavLink to="/tasks" onClick={() => setMobileMenuOpen(false)} icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
+                  <MobileNavLink to="/check" onClick={() => setMobileMenuOpen(false)} icon={<ShieldCheck className="h-4 w-4" />} label="Kontrola platnosti" />
                   <div className="border-t pt-2 mt-2">
                     <button
                       onClick={() => {
                         setMobileMenuOpen(false);
                         handleSignOut();
                       }}
-                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
+                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
                       Odhlásiť sa
@@ -264,14 +242,7 @@ function RootComponent() {
                   </div>
                 </>
               ) : (
-                <Link
-                  to="/auth"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
-                >
-                  <User className="h-4 w-4" />
-                  Prihlásiť sa
-                </Link>
+                <MobileNavLink to="/auth" onClick={() => setMobileMenuOpen(false)} icon={<User className="h-4 w-4" />} label="Prihlásiť sa" />
               )}
             </div>
           )}
@@ -286,5 +257,45 @@ function RootComponent() {
         </footer>
       </div>
     </QueryClientProvider>
+  );
+}
+
+function NavLink({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
+  return (
+    <Link
+      to={to}
+      activeOptions={{ exact: to === "/" }}
+      activeProps={{ className: "text-primary bg-primary/5" }}
+      className="group relative inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+    >
+      {icon}
+      {label}
+      <span className="absolute bottom-0 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full bg-primary transition-all duration-300 group-data-[status=active]:w-4/5" />
+    </Link>
+  );
+}
+
+function MobileNavLink({
+  to,
+  onClick,
+  icon,
+  label,
+}: {
+  to: string;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      activeOptions={{ exact: to === "/" }}
+      activeProps={{ className: "text-primary bg-primary/5" }}
+      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent transition-colors"
+    >
+      {icon}
+      {label}
+    </Link>
   );
 }
