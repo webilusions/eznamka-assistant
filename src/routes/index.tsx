@@ -257,24 +257,49 @@ function VehicleFormPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Typ diaľničnej známky</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Vyberte typ známky" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {vignetteTypes.map((v) => (
-                          <SelectItem key={v.value} value={v.value}>
-                            {v.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {vignetteTypes.map((v) => {
+                        const selected = field.value === v.value;
+                        return (
+                          <button
+                            type="button"
+                            key={v.value}
+                            onClick={() => field.onChange(v.value)}
+                            className={cn(
+                              "rounded-lg border-2 p-3 text-left transition bg-[#d6e9f5]",
+                              selected
+                                ? "border-primary ring-2 ring-primary/30"
+                                : "border-transparent hover:border-primary/40"
+                            )}
+                          >
+                            <div className="mb-2 text-sm font-bold text-foreground">
+                              {v.title}
+                            </div>
+                            <div className="flex gap-2">
+                              <div
+                                className={cn(
+                                  "flex h-16 w-12 shrink-0 items-end justify-center rounded pb-1 text-[10px] font-bold",
+                                  v.badgeClass
+                                )}
+                              >
+                                {v.badge}
+                              </div>
+                              <div className="flex-1 rounded bg-white p-2 text-xs">
+                                <div className="text-muted-foreground">Platnosť</div>
+                                <div className="font-semibold text-foreground">{v.validity}</div>
+                                <div className="mt-1 text-muted-foreground">Cena s DPH</div>
+                                <div className="font-bold text-foreground">{v.price}</div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
 
               <div className="pt-2">
                 <h3 className="text-base font-semibold text-primary">
