@@ -208,7 +208,7 @@ try {
             $vignettes[] = ['type' => 'Známka', 'validFrom' => $row[1], 'validTo' => $row[2], 'isValid' => ($from && $to && time() >= $from && time() <= $to)];
             if ($from && $to && $targetTs >= $from && $targetTs <= $to) {
                 $conflict = true;
-                $reasons[] = "Platná známka {$row[1]} – {$row[2]} pokrýva {$date}";
+                $reasons[] = "Platná známka {$row[1]} – {$row[2]}";
             }
         }
     }
@@ -222,7 +222,7 @@ try {
             $toExt = strtotime(($year + 1) . "-01-31");
             if ($targetTs >= $from && $targetTs <= $toExt) {
                 $conflict = true;
-                $reasons[] = "Ročná známka {$year} pokrýva {$date}";
+                $reasons[] = "Ročná známka {$year}";
             }
         }
     }
