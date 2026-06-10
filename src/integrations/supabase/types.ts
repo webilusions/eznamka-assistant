@@ -95,6 +95,9 @@ export type Database = {
           eznamka_order_id: string | null
           id: string
           license_plate: string
+          payment_amount: string | null
+          payment_qr_base64: string | null
+          payment_url: string | null
           status: Database["public"]["Enums"]["task_status"]
           updated_at: string
           user_id: string | null
@@ -111,6 +114,9 @@ export type Database = {
           eznamka_order_id?: string | null
           id?: string
           license_plate: string
+          payment_amount?: string | null
+          payment_qr_base64?: string | null
+          payment_url?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           updated_at?: string
           user_id?: string | null
@@ -127,6 +133,9 @@ export type Database = {
           eznamka_order_id?: string | null
           id?: string
           license_plate?: string
+          payment_amount?: string | null
+          payment_qr_base64?: string | null
+          payment_url?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           updated_at?: string
           user_id?: string | null
