@@ -169,7 +169,7 @@ function VehicleFormPage() {
           <Car className="h-7 w-7 text-primary" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Nová úloha
+          Nákup známky
         </h1>
         <p className="mt-2 text-muted-foreground">
           Zadajte údaje o vozidle a pripravíme nákup diaľničnej známky
