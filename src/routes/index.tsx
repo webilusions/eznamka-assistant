@@ -61,6 +61,23 @@ const vignetteTypes = [
   { value: "1day", label: "Jednodňová známka" },
 ];
 
+const quickCountries = [
+  { code: "SK", name: "Slovensko", flag: "🇸🇰" },
+  { code: "CZ", name: "Česká republika", flag: "🇨🇿" },
+  { code: "HU", name: "Maďarsko", flag: "🇭🇺" },
+  { code: "PL", name: "Poľsko", flag: "🇵🇱" },
+  { code: "UA", name: "Ukrajina", flag: "🇺🇦" },
+  { code: "AT", name: "Rakúsko", flag: "🇦🇹" },
+];
+
+const vignetteDurationDays: Record<string, number> = {
+  "1year": 365,
+  "1month": 30,
+  "10day": 10,
+  "1day": 1,
+};
+
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
