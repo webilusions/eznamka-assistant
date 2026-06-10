@@ -185,27 +185,65 @@ try {
     }
     $body = $client->lastBody;
 
-    // Parse dátumy
+    // Odpoveď je JSON { validationFailed, view: "<html>" } — vytiahni view
+    $html = $body;
+    $decoded = json_decode($body, true);
+    if (is_array($decoded) && isset($decoded['view'])) {
+        $html = $decoded['view'];
+    }
+    // Normalizácia
+    $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = preg_replace('/\s+/u', ' ', $text);
+
     $targetTs = strtotime($date);
     $vignettes = [];
     $conflict = false;
     $reasons = [];
 
-    if (preg_match_all('/(\d{1,2}\.\s?\d{1,2}\.\s?\d{4})\s*(?:-|do|–)\s*(\d{1,2}\.\s?\d{1,2}\.\s?\d{4})/u', $body, $mm, PREG_SET_ORDER)) {
+    // 1) Klasický rozsah dátumov "1.1.2025 - 31.12.2025"
+    if (preg_match_all('/(\d{1,2}\.\s?\d{1,2}\.\s?\d{4})\s*(?:-|do|–|—)\s*(\d{1,2}\.\s?\d{1,2}\.\s?\d{4})/u', $text, $mm, PREG_SET_ORDER)) {
         foreach ($mm as $row) {
             $from = strtotime(str_replace(' ', '', $row[1]));
             $to   = strtotime(str_replace(' ', '', $row[2]));
-            $vignettes[] = ['from' => $row[1], 'to' => $row[2]];
+            $vignettes[] = ['type' => 'Známka', 'validFrom' => $row[1], 'validTo' => $row[2], 'isValid' => ($from && $to && time() >= $from && time() <= $to)];
             if ($from && $to && $targetTs >= $from && $targetTs <= $to) {
                 $conflict = true;
                 $reasons[] = "Platná známka {$row[1]} – {$row[2]} pokrýva {$date}";
             }
         }
     }
-    $noVignette = (bool)preg_match('/nebol[ai]? nájden|neexistuj|žiadn[aé]\s+(diaľničn|známk)/iu', $body);
+
+    // 2) Ročné známky typu "365-dňová 2025" alebo "Ročná 2025"
+    if (preg_match_all('/(365[-\s]?dňová|Ročná|ročná)\s+(\d{4})/u', $text, $ym, PREG_SET_ORDER)) {
+        foreach ($ym as $row) {
+            $year = (int)$row[2];
+            $from = strtotime("$year-01-01");
+            $to   = strtotime("$year-12-31");
+            // Slovenské ročné známky platia od 1.1. do 31.1. nasledujúceho roka
+            $toExt = strtotime(($year + 1) . "-01-31");
+            $vignettes[] = [
+                'type' => trim($row[0]),
+                'validFrom' => date('d.m.Y', $from),
+                'validTo' => date('d.m.Y', $toExt),
+                'isValid' => (time() >= $from && time() <= $toExt),
+            ];
+            if ($targetTs >= $from && $targetTs <= $toExt) {
+                $conflict = true;
+                $reasons[] = "Ročná známka {$year} pokrýva {$date}";
+            }
+        }
+    }
+
+    $noVignette = (bool)preg_match('/nebol[ai]? (nájden|evidovan)|neevidujem|neexistuj|žiadn[aeé]\s+(diaľničn|známk)/iu', $text);
+    $hasVignettesText = (bool)preg_match('/sú evidované|evidované nasledujúce|nasledujúce diaľničné známky/iu', $text);
+
     $summary = $conflict
         ? implode('; ', $reasons)
-        : ($noVignette ? 'Žiadna platná známka pre toto vozidlo' : 'Pre cieľový dátum nie je konflikt');
+        : ($noVignette
+            ? 'Žiadna platná známka pre toto vozidlo'
+            : ($hasVignettesText && empty($vignettes)
+                ? 'Vozidlo má evidované známky, ale nepokrývajú cieľový dátum'
+                : (empty($vignettes) ? 'Žiadna platná známka pre toto vozidlo' : 'Pre cieľový dátum nie je konflikt')));
 
     echo json_encode([
         'conflict' => $conflict,
