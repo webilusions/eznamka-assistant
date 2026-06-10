@@ -437,29 +437,90 @@ function process_task(array $task): void {
             throw new RuntimeException('Validation errors: ' . json_encode($checkResp));
         }
 
-        // Checkout URL — môže byť v redirectUrl / RedirectUrl / Url / nextUrl
+        // Checkout URL (purchaseredirect) — ulož pre fallback
         $checkoutUrl = $checkResp['RedirectUrl'] ?? $checkResp['redirectUrl']
             ?? $checkResp['Url'] ?? $checkResp['url'] ?? null;
-        if (!$checkoutUrl) {
-            // Možno treba ešte GET na potvrdzovaciu stránku — zatiaľ ulož celý response na ladenie
-            update_task($id, [
-                'status' => 'paused_before_payment',
-                'eznamka_checkout_url' => null,
-                'updated_at' => gmdate('c'),
-            ]);
-            log_step($id, 'done', 'Formulár prešiel, ale checkout URL chýba v response — pozri body_preview vyššie', 'warning', $checkResp);
-            return;
-        }
-        if (strpos($checkoutUrl, 'http') !== 0) {
+        if ($checkoutUrl && strpos($checkoutUrl, 'http') !== 0) {
             $checkoutUrl = EZNAMKA_BASE . '/' . ltrim($checkoutUrl, '/');
+        }
+
+        // --- 5. Vyber TatraPay a získaj QR ---
+        $view = $checkResp['view'] ?? '';
+        if (!$view) {
+            throw new RuntimeException('check/ response neobsahuje view HTML s platobným formulárom');
+        }
+
+        // Parsuj hidden inputs z confirm-form
+        $hiddenPay = [];
+        if (preg_match_all('/<input\b[^>]*type=["\']hidden["\'][^>]*>/i', $view, $inps)) {
+            foreach ($inps[0] as $tag) {
+                if (!preg_match('/\bname\s*=\s*"([^"]+)"/i', $tag, $nm)) continue;
+                $val = '';
+                if (preg_match('/\bvalue\s*=\s*"([^"]*)"/i', $tag, $vm)) $val = $vm[1];
+                $hiddenPay[$nm[1]] = html_entity_decode($val, ENT_QUOTES);
+            }
+        }
+        $hiddenPay['PaymentType'] = 'TatraPay';
+        if (!isset($hiddenPay['__RequestVerificationToken']) && $rvt) {
+            $hiddenPay['__RequestVerificationToken'] = $rvt;
+        }
+
+        log_step($id, 'payment-select', 'Posielam výber TatraPay', 'info', ['fields' => array_keys($hiddenPay)]);
+
+        $client->post(
+            EZNAMKA_BASE . '/selfcare/payment/proceedpaymentsingle/',
+            $hiddenPay,
+            [
+                'Referer: ' . ($checkoutUrl ?: EZNAMKA_BASE . '/selfcare/purchase/'),
+                'Origin: ' . EZNAMKA_BASE,
+            ],
+            true
+        );
+        log_step($id, 'payment-redirect', "proceedpaymentsingle status={$client->lastStatus} url={$client->lastUrl}", 'info', [
+            'body_preview' => substr(strip_tags($client->lastBody), 0, 600),
+        ]);
+
+        $paymentPageUrl = $client->lastUrl;
+        $tatraBase = 'https://moja.tatrabanka.sk';
+
+        // Ak nás presmerovalo na tatrabanku, stiahneme QR a sumu
+        $qrBase64 = null;
+        $amount = null;
+        if (stripos($paymentPageUrl, 'tatrabanka.sk') !== false) {
+            $tatraHtml = $client->lastBody;
+            // Suma "10,80 EUR" / "10.80 EUR"
+            if (preg_match('/(\d+[\.,]\d{2})\s*EUR/u', $tatraHtml, $am)) {
+                $amount = str_replace('.', ',', $am[1]) . ' EUR';
+            }
+            // Stiahni QR gif
+            $client->get($tatraBase . '/cgi-bin/e-commerce/start/pqr', [
+                'Referer: ' . $paymentPageUrl,
+                'Accept: image/gif,image/*,*/*;q=0.8',
+            ]);
+            if ($client->lastStatus === 200 && strlen($client->lastBody) > 100) {
+                $qrBase64 = 'data:image/gif;base64,' . base64_encode($client->lastBody);
+                log_step($id, 'qr', 'QR kód získaný (' . strlen($client->lastBody) . ' B)');
+            } else {
+                log_step($id, 'qr', "QR nedostupné, status={$client->lastStatus}", 'warning');
+            }
+        } else {
+            log_step($id, 'payment-redirect', 'Po výbere TatraPay sme neskončili na tatrabanke, paymentPageUrl=' . $paymentPageUrl, 'warning');
         }
 
         update_task($id, [
             'status' => 'paused_before_payment',
             'eznamka_checkout_url' => $checkoutUrl,
+            'payment_url' => $paymentPageUrl,
+            'payment_qr_base64' => $qrBase64,
+            'payment_amount' => $amount,
             'updated_at' => gmdate('c'),
         ]);
-        log_step($id, 'done', 'Úloha pripravená, čaká na manuálnu platbu', 'info', ['checkout_url' => $checkoutUrl]);
+        log_step($id, 'done', 'Pripravený QR kód pre platbu cez TatraPay', 'info', [
+            'checkout_url' => $checkoutUrl,
+            'payment_url' => $paymentPageUrl,
+            'amount' => $amount,
+            'has_qr' => $qrBase64 !== null,
+        ]);
 
     } catch (Throwable $e) {
         update_task($id, [
