@@ -25,7 +25,6 @@ const formSchema = z.object({
     .max(15, "EČV je príliš dlhá")
     .regex(/^[A-Z0-9\- ]+$/i, "Neplatný formát EČV"),
   countryCode: z.string().min(1, "Vyberte krajinu registrácie"),
-  validityDate: z.date().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
