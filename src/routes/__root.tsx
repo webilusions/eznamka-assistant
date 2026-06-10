@@ -170,11 +170,11 @@ function RootComponent() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-1">
+              <NavLink to="/check" icon={<ShieldCheck className="h-4 w-4" />} label="Overenie platnosti známky" />
               {session && (
                 <>
                   <NavLink to="/" icon={<Play className="h-4 w-4" />} label="Nová úloha" />
                   <NavLink to="/tasks" icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
-                  <NavLink to="/check" icon={<ShieldCheck className="h-4 w-4" />} label="Kontrola platnosti" />
                 </>
               )}
             </nav>
@@ -223,11 +223,11 @@ function RootComponent() {
           {/* Mobile nav */}
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-background px-4 py-3 space-y-1">
+              <MobileNavLink to="/check" onClick={() => setMobileMenuOpen(false)} icon={<ShieldCheck className="h-4 w-4" />} label="Overenie platnosti známky" />
               {session ? (
                 <>
                   <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)} icon={<Play className="h-4 w-4" />} label="Nová úloha" />
                   <MobileNavLink to="/tasks" onClick={() => setMobileMenuOpen(false)} icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
-                  <MobileNavLink to="/check" onClick={() => setMobileMenuOpen(false)} icon={<ShieldCheck className="h-4 w-4" />} label="Kontrola platnosti" />
                   <div className="border-t pt-2 mt-2">
                     <button
                       onClick={() => {
