@@ -219,14 +219,7 @@ try {
             $year = (int)$row[2];
             $from = strtotime("$year-01-01");
             $to   = strtotime("$year-12-31");
-            // Slovenské ročné známky platia od 1.1. do 31.1. nasledujúceho roka
             $toExt = strtotime(($year + 1) . "-01-31");
-            $vignettes[] = [
-                'type' => trim($row[0]),
-                'validFrom' => date('d.m.Y', $from),
-                'validTo' => date('d.m.Y', $toExt),
-                'isValid' => (time() >= $from && time() <= $toExt),
-            ];
             if ($targetTs >= $from && $targetTs <= $toExt) {
                 $conflict = true;
                 $reasons[] = "Ročná známka {$year} pokrýva {$date}";
