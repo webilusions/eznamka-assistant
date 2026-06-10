@@ -229,7 +229,7 @@ try {
             ];
             if ($targetTs >= $from && $targetTs <= $toExt) {
                 $conflict = true;
-                $reasons[] = "Ročná známka {$year} pokrýva {$date}";
+                $reasons[] = "Ročná známka {$year}: " . date('d.m.Y', $from) . " – " . date('d.m.Y', $toExt);
             }
         }
     }
