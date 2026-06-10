@@ -103,6 +103,14 @@ function VehicleFormPage() {
     },
   });
 
+  const watchedVignette = form.watch("vignetteType");
+  const watchedDate = form.watch("validityDate");
+  const validUntil =
+    watchedDate && vignetteDurationDays[watchedVignette]
+      ? addDays(watchedDate, vignetteDurationDays[watchedVignette] - 1)
+      : null;
+
+
   const mutation = useMutation({
     mutationFn: (variables: { data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string } }) =>
       isExternalApiEnabled() ? externalTasksApi.createTask(variables.data) : createTaskFn(variables),
