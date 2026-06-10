@@ -213,31 +213,6 @@ function CheckValidityPage() {
                   </div>
                 )}
 
-                {result.vignettes && result.vignettes.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                      Nájdené známky
-                    </h4>
-                    <div className="space-y-2">
-                      {result.vignettes.map((v: any, i: number) => (
-                        <div key={i} className="rounded-md border bg-card p-3 text-sm">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{v.type || "Známka"}</span>
-                            <Badge variant={v.isValid ? "default" : "secondary"}>
-                              {v.isValid ? "Platná" : "Neplatná"}
-                            </Badge>
-                          </div>
-                          {v.validFrom && v.validTo && (
-                            <p className="mt-1 text-muted-foreground">
-                              Platnosť: {v.validFrom} — {v.validTo}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
