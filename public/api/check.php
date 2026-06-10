@@ -208,7 +208,7 @@ try {
             $vignettes[] = ['type' => 'Známka', 'validFrom' => $row[1], 'validTo' => $row[2], 'isValid' => ($from && $to && time() >= $from && time() <= $to)];
             if ($from && $to && $targetTs >= $from && $targetTs <= $to) {
                 $conflict = true;
-                $reasons[] = "Platná známka {$row[1]} – {$row[2]} pokrýva {$date}";
+                $reasons[] = "Platná známka {$row[1]} – {$row[2]}";
             }
         }
     }
