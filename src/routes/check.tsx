@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Car, ShieldCheck, ShieldAlert, Loader2, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Car, ShieldCheck, ShieldAlert, Loader2, AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
@@ -212,6 +213,38 @@ function CheckValidityPage() {
                   </div>
                 )}
 
+                {result.vignettes && result.vignettes.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Nájdené známky
+                    </p>
+                    {result.vignettes.map((v: any, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card p-3"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                            <p className="text-sm font-medium text-foreground">
+                              {v.type ?? v.name ?? "Diaľničná známka"}
+                            </p>
+                          </div>
+                          {(v.validFrom || v.validTo) && (
+                            <p className="text-xs text-muted-foreground pl-5">
+                              {v.validFrom} {v.validTo ? `– ${v.validTo}` : ""}
+                            </p>
+                          )}
+                        </div>
+                        {v.status && (
+                          <Badge variant={v.valid === false ? "destructive" : "secondary"}>
+                            {v.status}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
