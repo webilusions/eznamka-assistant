@@ -66,6 +66,22 @@ function update_task(string $taskId, array $patch): void {
     sb_request('PATCH', '/tasks', $patch, 'id=eq.' . urlencode($taskId));
 }
 
+/**
+ * Uloží HTML (alebo image) snapshot do task_screenshots ako data: URL.
+ */
+function save_snapshot(string $taskId, string $step, string $body, string $mime = 'text/html'): void {
+    if ($body === '') return;
+    if (strlen($body) > 1500000) {
+        $body = substr($body, 0, 1500000) . "\n<!-- truncated -->";
+    }
+    $url = 'data:' . $mime . ';base64,' . base64_encode($body);
+    sb_request('POST', '/task_screenshots', [
+        'task_id' => $taskId,
+        'step' => $step,
+        'screenshot_url' => $url,
+    ]);
+}
+
 // Atomicky claimne 1 pending task (Postgres RETURNING).
 function reset_stale_running_tasks(int $maxAgeMinutes = 10): void {
     // Úlohy zaseknuté v stave 'running' dlhšie ako N minút vráť na 'pending'
