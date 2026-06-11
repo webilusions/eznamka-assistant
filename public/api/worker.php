@@ -332,16 +332,29 @@ function process_task(array $task): void {
         $rvt = $m[1];
         log_step($id, 'session', 'Session + RVT získané');
 
-        // --- 2. POST vignetteselected (empty body, vignetteId is in query string per HAR)
-        $client->post(
-            EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId,
-            [],
-            ['Referer: ' . EZNAMKA_BASE . '/selfcare/purchase']
-        );
+        // --- 2. Pridaj vignetteId do košíka. Skús GET (zachová session), fallback POST s RVT.
+        $vsUrl = EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId;
+        $client->get($vsUrl, ['Referer: ' . EZNAMKA_BASE . '/selfcare/purchase']);
+        log_step($id, 'select', "GET vignetteselected status={$client->lastStatus}, url={$client->lastUrl}");
+        if ($client->lastStatus !== 200 || stripos($client->lastUrl, 'session-expired') !== false || stripos($client->lastUrl, 'error') !== false) {
+            $client->post(
+                $vsUrl,
+                ['__RequestVerificationToken' => $rvt],
+                [
+                    'Referer: ' . EZNAMKA_BASE . '/selfcare/purchase',
+                    'RequestVerificationToken: ' . $rvt,
+                    '__RequestVerificationToken: ' . $rvt,
+                ]
+            );
+            log_step($id, 'select', "POST vignetteselected fallback status={$client->lastStatus}, url={$client->lastUrl}");
+        }
         if ($client->lastStatus !== 200) {
             throw new RuntimeException("vignetteselected vrátil {$client->lastStatus}");
         }
-        log_step($id, 'select', "Typ známky zvolený, effective_url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
+        if (stripos($client->lastUrl, 'session-expired') !== false) {
+            throw new RuntimeException("vignetteselected presmerované na session-expired ({$client->lastUrl})");
+        }
+
 
         $formHtml = $client->lastBody;
         $formUrl = $client->lastUrl ?: (EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId);
