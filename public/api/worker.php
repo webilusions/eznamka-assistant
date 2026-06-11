@@ -504,8 +504,11 @@ function process_task(array $task): void {
 
         // --- 5. Vyber TatraPay a získaj QR ---
         $view = $checkResp['view'] ?? '';
+        if ($view) {
+            save_snapshot($id, 'check-view', $view);
+        }
         if (!$view) {
-            throw new RuntimeException('check/ response neobsahuje view HTML s platobným formulárom');
+            throw new RuntimeException('check/ response neobsahuje view HTML s platobným formulárom. Raw: ' . substr($client->lastBody, 0, 300));
         }
 
         // Parsuj hidden inputs z confirm-form
