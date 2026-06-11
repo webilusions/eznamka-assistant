@@ -590,7 +590,16 @@ function process_task(array $task): void {
             'error_message' => $e->getMessage(),
             'updated_at' => gmdate('c'),
         ]);
-        log_step($id, 'error', $e->getMessage(), 'error', ['trace' => $e->getTraceAsString()]);
+        // Snapshot posledného HTML stavu pri chybe (ak existuje)
+        if (!empty($client->lastBody)) {
+            $isHtml = stripos($client->lastBody, '<html') !== false || stripos($client->lastBody, '<!doctype') !== false;
+            save_snapshot($id, 'error', $client->lastBody, $isHtml ? 'text/html' : 'text/plain');
+        }
+        log_step($id, 'error', $e->getMessage(), 'error', [
+            'trace' => $e->getTraceAsString(),
+            'last_url' => $client->lastUrl,
+            'last_status' => $client->lastStatus,
+        ]);
     } finally {
         $client->cleanup();
     }
