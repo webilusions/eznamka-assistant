@@ -104,6 +104,10 @@ function TaskDetailPage() {
   const { data: screenshots = [], isLoading: screenshotsLoading } = useQuery({
     queryKey: ["task-screenshots", taskId],
     queryFn: () => isExternalApiEnabled() ? externalTasksApi.getTaskScreenshots(taskId) : fetchScreenshots({ data: { taskId } }),
+    refetchInterval: () => {
+      const s = (task as any)?.status;
+      return s === "running" || s === "pending" ? 3000 : false;
+    },
   });
 
   const handleDelete = async () => {
