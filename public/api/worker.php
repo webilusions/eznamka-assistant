@@ -482,6 +482,7 @@ function process_task(array $task): void {
             ]
         );
         log_step($id, 'check', "POST /check/ status={$client->lastStatus}", 'info', ['body_preview' => substr($client->lastBody, 0, 500)]);
+        save_snapshot($id, 'check-response', $client->lastBody, 'application/json');
         if ($client->lastStatus !== 200) {
             throw new RuntimeException("POST /check/ vrátil {$client->lastStatus}: " . substr($client->lastBody, 0, 300));
         }
