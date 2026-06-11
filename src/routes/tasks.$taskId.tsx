@@ -411,36 +411,66 @@ function TaskDetailPage() {
                 ) : (
                   <ScrollArea className="h-[400px] rounded-md border">
                     <div className="space-y-3 p-3">
-                      {screenshots.map((screenshot: any) => (
-                        <Dialog key={screenshot.id}>
-                          <DialogTrigger asChild>
-                            <div className="cursor-pointer overflow-hidden rounded-md border hover:border-primary transition-colors">
-                              <img
-                                src={screenshot.screenshot_url}
-                                alt={`Screenshot: ${screenshot.step}`}
-                                className="w-full h-auto object-cover max-h-[200px]"
-                                loading="lazy"
-                              />
-                              <div className="px-3 py-2">
-                                <p className="text-xs font-medium">{screenshot.step}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {format(new Date(screenshot.created_at), "d. MMM yyyy HH:mm:ss", { locale: sk })}
-                                </p>
+                      {screenshots.map((screenshot: any) => {
+                        const url: string = screenshot.screenshot_url || "";
+                        const isHtml = url.startsWith("data:text/html");
+                        const isJson = url.startsWith("data:application/json") || url.startsWith("data:text/plain");
+                        const isImage = !isHtml && !isJson;
+                        return (
+                          <Dialog key={screenshot.id}>
+                            <DialogTrigger asChild>
+                              <div className="cursor-pointer overflow-hidden rounded-md border hover:border-primary transition-colors">
+                                {isImage ? (
+                                  <img
+                                    src={url}
+                                    alt={`Screenshot: ${screenshot.step}`}
+                                    className="w-full h-auto object-cover max-h-[200px]"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className="flex h-[140px] items-center justify-center bg-muted">
+                                    <span className="text-xs font-mono text-muted-foreground">
+                                      {isHtml ? "HTML snapshot" : "Raw response"}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="px-3 py-2">
+                                  <p className="text-xs font-medium">{screenshot.step}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {format(new Date(screenshot.created_at), "d. MMM yyyy HH:mm:ss", { locale: sk })}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-4xl">
-                            <DialogHeader>
-                              <DialogTitle>{screenshot.step}</DialogTitle>
-                            </DialogHeader>
-                            <img
-                              src={screenshot.screenshot_url}
-                              alt={`Screenshot: ${screenshot.step}`}
-                              className="w-full h-auto rounded-md"
-                            />
-                          </DialogContent>
-                        </Dialog>
-                      ))}
+                            </DialogTrigger>
+                            <DialogContent className="max-w-5xl">
+                              <DialogHeader>
+                                <DialogTitle>{screenshot.step}</DialogTitle>
+                              </DialogHeader>
+                              {isImage && (
+                                <img src={url} alt={`Screenshot: ${screenshot.step}`} className="w-full h-auto rounded-md" />
+                              )}
+                              {isHtml && (
+                                <iframe
+                                  src={url}
+                                  title={screenshot.step}
+                                  sandbox=""
+                                  className="h-[70vh] w-full rounded-md border bg-white"
+                                />
+                              )}
+                              {isJson && (
+                                <pre className="max-h-[70vh] overflow-auto rounded-md border bg-muted p-3 text-xs">
+                                  {(() => {
+                                    try {
+                                      const raw = atob(url.split(",")[1] || "");
+                                      try { return JSON.stringify(JSON.parse(raw), null, 2); } catch { return raw; }
+                                    } catch { return url; }
+                                  })()}
+                                </pre>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                 )}
