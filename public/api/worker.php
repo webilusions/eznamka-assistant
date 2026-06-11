@@ -391,6 +391,7 @@ function process_task(array $task): void {
         if ($purchaseRedirectUrl) {
             $client->get($purchaseRedirectUrl, ['Referer: ' . $formUrl]);
             log_step($id, 'form', "GET purchaseredirect, status={$client->lastStatus}, url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
+            save_snapshot($id, 'purchaseredirect', $client->lastBody);
             if ($client->lastStatus === 200 && substr_count($client->lastBody, '<input') >= 5) {
                 $formHtml = $client->lastBody;
                 $formUrl = $client->lastUrl;
