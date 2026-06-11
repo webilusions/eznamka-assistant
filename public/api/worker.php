@@ -364,6 +364,7 @@ function process_task(array $task): void {
                 ]
             );
             log_step($id, 'select', "POST vignetteselected fallback status={$client->lastStatus}, url={$client->lastUrl}");
+            save_snapshot($id, 'vignetteselected-post', $client->lastBody);
         }
         if ($client->lastStatus !== 200) {
             throw new RuntimeException("vignetteselected vrátil {$client->lastStatus}");
