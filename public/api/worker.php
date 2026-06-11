@@ -66,6 +66,22 @@ function update_task(string $taskId, array $patch): void {
     sb_request('PATCH', '/tasks', $patch, 'id=eq.' . urlencode($taskId));
 }
 
+/**
+ * Uloží HTML (alebo image) snapshot do task_screenshots ako data: URL.
+ */
+function save_snapshot(string $taskId, string $step, string $body, string $mime = 'text/html'): void {
+    if ($body === '') return;
+    if (strlen($body) > 1500000) {
+        $body = substr($body, 0, 1500000) . "\n<!-- truncated -->";
+    }
+    $url = 'data:' . $mime . ';base64,' . base64_encode($body);
+    sb_request('POST', '/task_screenshots', [
+        'task_id' => $taskId,
+        'step' => $step,
+        'screenshot_url' => $url,
+    ]);
+}
+
 // Atomicky claimne 1 pending task (Postgres RETURNING).
 function reset_stale_running_tasks(int $maxAgeMinutes = 10): void {
     // Úlohy zaseknuté v stave 'running' dlhšie ako N minút vráť na 'pending'
@@ -336,6 +352,7 @@ function process_task(array $task): void {
         $vsUrl = EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId;
         $client->get($vsUrl, ['Referer: ' . EZNAMKA_BASE . '/selfcare/purchase']);
         log_step($id, 'select', "GET vignetteselected status={$client->lastStatus}, url={$client->lastUrl}");
+        save_snapshot($id, 'vignetteselected-get', $client->lastBody);
         if ($client->lastStatus !== 200 || stripos($client->lastUrl, 'session-expired') !== false || stripos($client->lastUrl, 'error') !== false) {
             $client->post(
                 $vsUrl,
@@ -347,6 +364,7 @@ function process_task(array $task): void {
                 ]
             );
             log_step($id, 'select', "POST vignetteselected fallback status={$client->lastStatus}, url={$client->lastUrl}");
+            save_snapshot($id, 'vignetteselected-post', $client->lastBody);
         }
         if ($client->lastStatus !== 200) {
             throw new RuntimeException("vignetteselected vrátil {$client->lastStatus}");
@@ -373,6 +391,7 @@ function process_task(array $task): void {
         if ($purchaseRedirectUrl) {
             $client->get($purchaseRedirectUrl, ['Referer: ' . $formUrl]);
             log_step($id, 'form', "GET purchaseredirect, status={$client->lastStatus}, url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
+            save_snapshot($id, 'purchaseredirect', $client->lastBody);
             if ($client->lastStatus === 200 && substr_count($client->lastBody, '<input') >= 5) {
                 $formHtml = $client->lastBody;
                 $formUrl = $client->lastUrl;
@@ -463,6 +482,7 @@ function process_task(array $task): void {
             ]
         );
         log_step($id, 'check', "POST /check/ status={$client->lastStatus}", 'info', ['body_preview' => substr($client->lastBody, 0, 500)]);
+        save_snapshot($id, 'check-response', $client->lastBody, 'application/json');
         if ($client->lastStatus !== 200) {
             throw new RuntimeException("POST /check/ vrátil {$client->lastStatus}: " . substr($client->lastBody, 0, 300));
         }
@@ -484,8 +504,11 @@ function process_task(array $task): void {
 
         // --- 5. Vyber TatraPay a získaj QR ---
         $view = $checkResp['view'] ?? '';
+        if ($view) {
+            save_snapshot($id, 'check-view', $view);
+        }
         if (!$view) {
-            throw new RuntimeException('check/ response neobsahuje view HTML s platobným formulárom');
+            throw new RuntimeException('check/ response neobsahuje view HTML s platobným formulárom. Raw: ' . substr($client->lastBody, 0, 300));
         }
 
         // Parsuj hidden inputs z confirm-form
@@ -517,6 +540,7 @@ function process_task(array $task): void {
         log_step($id, 'payment-redirect', "proceedpaymentsingle status={$client->lastStatus} url={$client->lastUrl}", 'info', [
             'body_preview' => substr(strip_tags($client->lastBody), 0, 600),
         ]);
+        save_snapshot($id, 'payment-page', $client->lastBody);
 
         $paymentPageUrl = $client->lastUrl;
         $tatraBase = 'https://moja.tatrabanka.sk';
@@ -566,7 +590,16 @@ function process_task(array $task): void {
             'error_message' => $e->getMessage(),
             'updated_at' => gmdate('c'),
         ]);
-        log_step($id, 'error', $e->getMessage(), 'error', ['trace' => $e->getTraceAsString()]);
+        // Snapshot posledného HTML stavu pri chybe (ak existuje)
+        if (!empty($client->lastBody)) {
+            $isHtml = stripos($client->lastBody, '<html') !== false || stripos($client->lastBody, '<!doctype') !== false;
+            save_snapshot($id, 'error', $client->lastBody, $isHtml ? 'text/html' : 'text/plain');
+        }
+        log_step($id, 'error', $e->getMessage(), 'error', [
+            'trace' => $e->getTraceAsString(),
+            'last_url' => $client->lastUrl,
+            'last_status' => $client->lastStatus,
+        ]);
     } finally {
         $client->cleanup();
     }
