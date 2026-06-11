@@ -540,6 +540,7 @@ function process_task(array $task): void {
         log_step($id, 'payment-redirect', "proceedpaymentsingle status={$client->lastStatus} url={$client->lastUrl}", 'info', [
             'body_preview' => substr(strip_tags($client->lastBody), 0, 600),
         ]);
+        save_snapshot($id, 'payment-page', $client->lastBody);
 
         $paymentPageUrl = $client->lastUrl;
         $tatraBase = 'https://moja.tatrabanka.sk';
