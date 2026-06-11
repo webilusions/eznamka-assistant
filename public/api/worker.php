@@ -343,36 +343,61 @@ function process_task(array $task): void {
         }
         log_step($id, 'select', "Typ známky zvolený, effective_url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
 
-        // Ak vignetteselected vrátil len redirect/potvrdzovaciu stránku bez polí, dotiahni reálny formulár
         $formHtml = $client->lastBody;
         $formUrl = $client->lastUrl ?: (EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId);
 
-        $needsExtraGet = (substr_count($formHtml, '<input') < 5);
-        if ($needsExtraGet) {
-            // Skús GET na samotnú purchase stránku (po vignetteselected by mala zobraziť formulár)
+        // --- 2b. Nájdi purchaseredirect URL (s ?sg=...) a načítaj reálny formulár ---
+        $purchaseRedirectUrl = null;
+        if (stripos($formUrl, 'purchaseredirect') !== false) {
+            $purchaseRedirectUrl = $formUrl;
+        } elseif (preg_match('#/selfcare/purchase/singlepurchase/purchaseredirect/\?sg=[a-f0-9]+#i', $formHtml, $mm)) {
+            $purchaseRedirectUrl = EZNAMKA_BASE . $mm[0];
+        } elseif (!empty($client->lastHeaders['location']) && stripos($client->lastHeaders['location'], 'purchaseredirect') !== false) {
+            $loc = $client->lastHeaders['location'];
+            $purchaseRedirectUrl = (strpos($loc, 'http') === 0) ? $loc : (EZNAMKA_BASE . '/' . ltrim($loc, '/'));
+        }
+
+        if ($purchaseRedirectUrl) {
+            $client->get($purchaseRedirectUrl, ['Referer: ' . $formUrl]);
+            log_step($id, 'form', "GET purchaseredirect, status={$client->lastStatus}, url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
+            if ($client->lastStatus === 200 && substr_count($client->lastBody, '<input') >= 5) {
+                $formHtml = $client->lastBody;
+                $formUrl = $client->lastUrl;
+            }
+        } elseif (substr_count($formHtml, '<input') < 5) {
             $client->get(EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/', ['Referer: ' . $formUrl]);
-            log_step($id, 'form', "GET form page, status={$client->lastStatus}, url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
+            log_step($id, 'form', "GET form page (fallback), status={$client->lastStatus}, url={$client->lastUrl}, body_len=" . strlen($client->lastBody));
             if ($client->lastStatus === 200 && substr_count($client->lastBody, '<input') >= 5) {
                 $formHtml = $client->lastBody;
                 $formUrl = $client->lastUrl;
             }
         }
 
-        // Vytiahni VŠETKY input polia (hidden + text + email + …) a select defaulty
+        // --- 2c. Vyber reálny <form> ktorý obsahuje LicensePlateNumber ---
+        $formInner = $formHtml;
+        if (preg_match_all('/<form\b[^>]*>([\s\S]*?)<\/form>/i', $formHtml, $forms)) {
+            $picked = null;
+            foreach ($forms[1] as $candidate) {
+                if (stripos($candidate, 'LicensePlateNumber') !== false) { $picked = $candidate; break; }
+            }
+            $formInner = $picked ?? $forms[1][0];
+        }
+
+        // Vytiahni VŠETKY input/select polia z reálneho formulára
         $hidden = [];
-        if (preg_match_all('/<input\b[^>]*>/i', $formHtml, $inputs)) {
+        if (preg_match_all('/<input\b[^>]*>/i', $formInner, $inputs)) {
             foreach ($inputs[0] as $tag) {
                 if (!preg_match('/\bname\s*=\s*"([^"]+)"/i', $tag, $nm)) continue;
                 $type = '';
                 if (preg_match('/\btype\s*=\s*"([^"]+)"/i', $tag, $tm)) $type = strtolower($tm[1]);
                 if (in_array($type, ['submit', 'button', 'image', 'file'], true)) continue;
+                if (($type === 'checkbox' || $type === 'radio') && !preg_match('/\bchecked\b/i', $tag)) continue;
                 $val = '';
                 if (preg_match('/\bvalue\s*=\s*"([^"]*)"/i', $tag, $vm)) $val = $vm[1];
                 $hidden[$nm[1]] = html_entity_decode($val, ENT_QUOTES);
             }
         }
-        // Selecty: zober prvý <option ... selected> alebo prvý option
-        if (preg_match_all('/<select\b[^>]*\bname\s*=\s*"([^"]+)"[^>]*>([\s\S]*?)<\/select>/i', $formHtml, $sels, PREG_SET_ORDER)) {
+        if (preg_match_all('/<select\b[^>]*\bname\s*=\s*"([^"]+)"[^>]*>([\s\S]*?)<\/select>/i', $formInner, $sels, PREG_SET_ORDER)) {
             foreach ($sels as $s) {
                 $name = $s[1]; $inner = $s[2]; $val = '';
                 if (preg_match('/<option[^>]*\bselected\b[^>]*\bvalue\s*=\s*"([^"]*)"/i', $inner, $om)) $val = $om[1];
@@ -380,7 +405,7 @@ function process_task(array $task): void {
                 if (!isset($hidden[$name])) $hidden[$name] = html_entity_decode($val, ENT_QUOTES);
             }
         }
-        if (isset($hidden['__RequestVerificationToken'])) {
+        if (!empty($hidden['__RequestVerificationToken'])) {
             $rvt = $hidden['__RequestVerificationToken'];
         } else {
             $hidden['__RequestVerificationToken'] = $rvt;
@@ -388,7 +413,7 @@ function process_task(array $task): void {
         log_step($id, 'parse', 'Parsované polia formulára', 'info', [
             'fields' => array_keys($hidden),
             'form_url' => $formUrl,
-            'body_preview' => substr(strip_tags($formHtml), 0, 800),
+            'body_preview' => substr(strip_tags($formInner), 0, 600),
         ]);
 
         // --- 3. Rieš reCAPTCHA cez Capsolver
