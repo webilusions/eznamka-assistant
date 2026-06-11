@@ -352,6 +352,7 @@ function process_task(array $task): void {
         $vsUrl = EZNAMKA_BASE . '/selfcare/purchase/singlepurchase/vignetteselected/?vignetteId=' . $vignetteId;
         $client->get($vsUrl, ['Referer: ' . EZNAMKA_BASE . '/selfcare/purchase']);
         log_step($id, 'select', "GET vignetteselected status={$client->lastStatus}, url={$client->lastUrl}");
+        save_snapshot($id, 'vignetteselected-get', $client->lastBody);
         if ($client->lastStatus !== 200 || stripos($client->lastUrl, 'session-expired') !== false || stripos($client->lastUrl, 'error') !== false) {
             $client->post(
                 $vsUrl,
