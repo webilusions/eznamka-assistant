@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { runPurchase } from "./runner.js";
 
 const {
   PORT = 3001,
@@ -129,6 +130,53 @@ app.delete("/api/tasks/:id", async (req, res) => {
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/tasks/:id/run — spustí Playwright automatizáciu na pozadí
+app.post("/api/tasks/:id/run", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const { data: task, error } = await supabase.from("tasks").select("*").eq("id", id).single();
+    if (error || !task) return res.status(404).json({ error: "Task not found" });
+
+    // fire-and-forget
+    res.json({ success: true, message: "Spúšťam automatizáciu na pozadí" });
+
+    const log = async (step, message, level = "info", metadata = null) => {
+      await supabase.from("task_logs").insert({ task_id: id, step, message, level, metadata });
+    };
+    const shot = async (step, buffer) => {
+      const filename = `${id}/${Date.now()}-${step}.png`;
+      const { error: upErr } = await supabase.storage
+        .from("task-screenshots")
+        .upload(filename, buffer, { contentType: "image/png", upsert: true });
+      if (upErr) {
+        console.error("Upload error:", upErr);
+        return null;
+      }
+      const { data: pub } = supabase.storage.from("task-screenshots").getPublicUrl(filename);
+      const url = pub.publicUrl;
+      await supabase.from("task_screenshots").insert({ task_id: id, step, screenshot_url: url });
+      return url;
+    };
+
+    await supabase.from("tasks").update({ status: "processing" }).eq("id", id);
+
+    try {
+      const { paymentUrl } = await runPurchase(task, log, shot);
+      await supabase
+        .from("tasks")
+        .update({ status: "awaiting_payment", payment_url: paymentUrl, eznamka_checkout_url: paymentUrl })
+        .eq("id", id);
+    } catch (e) {
+      await supabase
+        .from("tasks")
+        .update({ status: "failed", error_message: e.message })
+        .eq("id", id);
+    }
+  } catch (e) {
+    if (!res.headersSent) res.status(500).json({ error: e.message });
   }
 });
 
