@@ -204,7 +204,7 @@ function RootComponent() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Link to="/auth">
+                <Link to="/prihlasenie">
                   <Button size="sm">Prihlásiť sa</Button>
                 </Link>
               )}
@@ -242,7 +242,7 @@ function RootComponent() {
                   </div>
                 </>
               ) : (
-                <MobileNavLink to="/auth" onClick={() => setMobileMenuOpen(false)} icon={<User className="h-4 w-4" />} label="Prihlásiť sa" />
+                <MobileNavLink to="/prihlasenie" onClick={() => setMobileMenuOpen(false)} icon={<User className="h-4 w-4" />} label="Prihlásiť sa" />
               )}
             </div>
           )}

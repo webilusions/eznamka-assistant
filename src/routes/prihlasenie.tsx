@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, Chrome, Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/auth")({
+export const Route = createFileRoute("/prihlasenie")({
   head: () => ({
     meta: [
       { title: "Prihlásenie — eZnamka Automatizácia" },
