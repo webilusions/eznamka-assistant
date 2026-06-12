@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { runPurchase } from "./runner.js";
 
 const {
   PORT = 3001,
