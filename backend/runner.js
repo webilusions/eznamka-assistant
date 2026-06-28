@@ -79,16 +79,22 @@ export async function runPurchase(task, log, shot) {
     await log("vignette_selected", `Vybraná známka: ${label}`);
     await shot("vignette_selected", await page.screenshot());
 
-    // Formulár – EČV, krajina, email
-    await page.locator('input[name*="licensePlate"], input[name*="ecv"]').first().fill(task.license_plate);
+    // Formulár – EČV, krajina, email (real field names from eznamka.sk)
+    await page.waitForSelector('input[name="Vignette.LicensePlateNumber"]', { timeout: 30000 });
+    await page.fill('input[name="Vignette.LicensePlateNumber"]', task.license_plate);
+    const ecvAgain = page.locator('input[name="Vignette.RegistrationNumberAgain"]');
+    if (await ecvAgain.count()) await ecvAgain.fill(task.license_plate);
 
-    // Krajina – select
-    const countrySelect = page.locator('select[name*="country"]').first();
+    const countrySelect = page.locator('select[name="Vignette.VehicleCountryCode"]');
     if (await countrySelect.count()) {
-      await countrySelect.selectOption({ value: task.country_code });
+      await countrySelect.selectOption(task.country_code).catch(async () => {
+        await countrySelect.selectOption({ label: task.country_code });
+      });
     }
 
-    await page.locator('input[type="email"], input[name*="email"]').first().fill(task.email);
+    await page.fill('input[name="Vignette.Email"]', task.email);
+    const emailAgain = page.locator('input[name="Vignette.EmailAgain"]');
+    if (await emailAgain.count()) await emailAgain.fill(task.email);
 
     await shot("form_filled", await page.screenshot());
     await log("form_filled", "Formulár vyplnený");
