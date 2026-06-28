@@ -115,11 +115,24 @@ app.get("/api/tasks/:taskId/screenshots", async (req, res) => {
       .eq("task_id", req.params.taskId)
       .order("created_at", { ascending: true });
     if (error) throw error;
-    res.json(data || []);
+
+    // Refresh signed URLs (bucket je privátny)
+    const result = await Promise.all(
+      (data || []).map(async (row) => {
+        const path = row.storage_path || row.screenshot_url;
+        if (!path || path.startsWith("http")) return row;
+        const { data: signed } = await supabase.storage
+          .from("task-screenshots")
+          .createSignedUrl(path, 60 * 60 * 24 * 7);
+        return { ...row, screenshot_url: signed?.signedUrl || row.screenshot_url };
+      })
+    );
+    res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
+
 
 // DELETE /api/tasks/:id
 app.delete("/api/tasks/:id", async (req, res) => {
