@@ -58,6 +58,7 @@ export type Database = {
           id: string
           screenshot_url: string
           step: string
+          storage_path: string | null
           task_id: string
         }
         Insert: {
@@ -65,6 +66,7 @@ export type Database = {
           id?: string
           screenshot_url: string
           step: string
+          storage_path?: string | null
           task_id: string
         }
         Update: {
@@ -72,6 +74,7 @@ export type Database = {
           id?: string
           screenshot_url?: string
           step?: string
+          storage_path?: string | null
           task_id?: string
         }
         Relationships: [
