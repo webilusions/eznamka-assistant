@@ -1,0 +1,1 @@
+ALTER TABLE public.task_screenshots ADD COLUMN IF NOT EXISTS storage_path text;
