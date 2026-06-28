@@ -170,9 +170,11 @@ app.post("/api/tasks/:id/run", async (req, res) => {
         console.error("Upload error:", upErr);
         return null;
       }
-      const { data: pub } = supabase.storage.from("task-screenshots").getPublicUrl(filename);
-      const url = pub.publicUrl;
-      await supabase.from("task_screenshots").insert({ task_id: id, step, screenshot_url: url });
+      const { data: signed } = await supabase.storage
+        .from("task-screenshots")
+        .createSignedUrl(filename, 60 * 60 * 24 * 7);
+      const url = signed?.signedUrl || filename;
+      await supabase.from("task_screenshots").insert({ task_id: id, step, screenshot_url: url, storage_path: filename });
       return url;
     };
 
