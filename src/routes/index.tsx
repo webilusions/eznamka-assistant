@@ -310,7 +310,7 @@ function VehicleFormPage() {
                         </SelectContent>
 
                       </Select>
-                      <div className="mt-2 flex flex-nowrap gap-1">
+                      <div className="mt-2 grid w-full gap-1" style={{ gridTemplateColumns: `repeat(${quickCountries.length}, minmax(0, 1fr))` }}>
                         {quickCountries.map((c) => (
                           <button
                             key={c.code}
