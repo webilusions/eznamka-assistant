@@ -300,9 +300,10 @@ function VehicleFormPage() {
                                 <img
                                   src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
                                   alt={c.name}
-                                  className="h-4 w-6 rounded-sm object-cover"
+                                  className="h-3.5 w-5 object-cover"
                                   loading="lazy"
                                 />
+
                                 {c.name}
                               </span>
                             </SelectItem>
@@ -319,7 +320,7 @@ function VehicleFormPage() {
                             aria-label={c.name}
                             title={c.name}
                             className={cn(
-                              "flex h-8 w-full items-center justify-center overflow-hidden rounded-none transition",
+                              "flex h-6 w-full items-center justify-center overflow-hidden rounded-none transition",
                               field.value === c.code
                                 ? "ring-2 ring-primary"
                                 : "opacity-70 hover:opacity-100"
