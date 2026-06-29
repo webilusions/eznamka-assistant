@@ -319,14 +319,20 @@ function VehicleFormPage() {
                             aria-label={c.name}
                             title={c.name}
                             className={cn(
-                              "flex h-9 w-12 items-center justify-center rounded-md border text-xl transition",
+                              "flex h-9 w-12 items-center justify-center overflow-hidden rounded-md border transition",
                               field.value === c.code
                                 ? "border-primary ring-2 ring-primary/30"
                                 : "border-border hover:border-primary/50"
                             )}
                           >
-                            {c.flag}
+                            <img
+                              src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
+                              alt={c.name}
+                              className="h-5 w-8 object-cover"
+                              loading="lazy"
+                            />
                           </button>
+
                         ))}
                       </div>
                       <FormMessage />
