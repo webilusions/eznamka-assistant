@@ -207,22 +207,37 @@ app.post("/api/tasks/:id/run", async (req, res) => {
   }
 });
 
-// GET /api/fio/account — Fio banka transakcie a zostatok
+// GET /api/fio/account — Fio banka transakcie a zostatok (s cache kvôli 30s rate limitu)
+const fioCache = new Map(); // key: days -> { data, ts }
+const FIO_TTL_MS = 35_000;
 app.get("/api/fio/account", async (req, res) => {
   try {
     const token = process.env.FIO_TOKEN;
     if (!token) return res.status(500).json({ error: "FIO_TOKEN chýba v .env" });
 
     const days = Math.min(parseInt(req.query.days) || 30, 90);
+    const cacheKey = String(days);
+    const cached = fioCache.get(cacheKey);
+    const now = Date.now();
+    if (cached && now - cached.ts < FIO_TTL_MS) {
+      return res.json({ ...cached.data, cached: true, cacheAgeSec: Math.round((now - cached.ts) / 1000) });
+    }
+
     const to = new Date();
-    const from = new Date(Date.now() - days * 86400000);
+    const from = new Date(now - days * 86400000);
     const fmt = (d) => d.toISOString().slice(0, 10);
     const url = `https://fioapi.fio.cz/v1/rest/periods/${token}/${fmt(from)}/${fmt(to)}/transactions.json`;
 
     const r = await fetch(url);
     if (!r.ok) {
+      if (r.status === 409 && cached) {
+        return res.json({ ...cached.data, cached: true, stale: true, cacheAgeSec: Math.round((now - cached.ts) / 1000) });
+      }
       const text = await r.text();
-      return res.status(r.status).json({ error: `Fio API ${r.status}`, detail: text.slice(0, 500) });
+      const msg = r.status === 409
+        ? "Fio API limit: 1 požiadavka za 30 sekúnd. Skús o chvíľu znova."
+        : `Fio API ${r.status}`;
+      return res.status(r.status).json({ error: msg, detail: text.slice(0, 500) });
     }
     const data = await r.json();
     const info = data?.accountStatement?.info || {};
@@ -245,7 +260,7 @@ app.get("/api/fio/account", async (req, res) => {
         type: get(8),
       };
     });
-    res.json({
+    const payload = {
       account: {
         accountId: info.accountId,
         bankId: info.bankId,
@@ -257,7 +272,9 @@ app.get("/api/fio/account", async (req, res) => {
         dateEnd: info.dateEnd,
       },
       transactions: txs,
-    });
+    };
+    fioCache.set(cacheKey, { data: payload, ts: Date.now() });
+    res.json(payload);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
