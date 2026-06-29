@@ -7,7 +7,7 @@
 
 import { chromium } from "playwright";
 
-const CAPSOLVER_KEY = process.env.CAPSOLVER_API_KEY;
+const CAPSOLVER_KEY = () => process.env.CAPSOLVER_API_KEY;
 const SITE_URL = "https://eznamka.sk/selfcare/purchase/";
 const SITE_KEY = "6LfHAjkUAAAAADameCOtUdnICQbHOiH4Xqt1lMAw";
 
@@ -20,14 +20,14 @@ const VIGNETTE_LABEL = {
 };
 
 async function solveCaptcha(pageUrl) {
-  if (!CAPSOLVER_KEY) throw new Error("CAPSOLVER_API_KEY chýba v .env");
+  if (!CAPSOLVER_KEY()) throw new Error("CAPSOLVER_API_KEY chýba v .env");
 
   // 1) createTask
   const create = await fetch("https://api.capsolver.com/createTask", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      clientKey: CAPSOLVER_KEY,
+      clientKey: CAPSOLVER_KEY(),
       task: {
         type: "ReCaptchaV2TaskProxyLess",
         websiteURL: pageUrl,
@@ -45,7 +45,7 @@ async function solveCaptcha(pageUrl) {
     const res = await fetch("https://api.capsolver.com/getTaskResult", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientKey: CAPSOLVER_KEY, taskId }),
+      body: JSON.stringify({ clientKey: CAPSOLVER_KEY(), taskId }),
     }).then((r) => r.json());
 
     if (res.status === "ready") return res.solution.gRecaptchaResponse;
