@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Version } from "bysquare";
 import { encode, PaymentOptions, CurrencyCode } from "bysquare/pay";
 import QRCode from "qrcode";
 import { useForm } from "react-hook-form";
@@ -607,9 +608,11 @@ function SummaryView({
           payments: [
             {
               type: PaymentOptions.PaymentOrder,
-              amount: Number(summary.amount),
+              amount: Number.parseFloat(summary.amount),
               currencyCode: CurrencyCode.EUR,
+              paymentDueDate: format(new Date(), "yyyyMMdd"),
               variableSymbol: summary.variableSymbol,
+              constantSymbol: "0308",
               paymentNote: `Dialnicna znamka ${summary.licensePlate}`,
               bankAccounts: [
                 {
@@ -618,15 +621,19 @@ function SummaryView({
                 },
               ],
               beneficiary: {
-                name: "Dialnicna znamka",
+                name: "Kozart",
               },
             },
           ],
-        });
+        }, { version: Version["1.1.0"] });
         const dataUrl = await QRCode.toDataURL(payload, {
           errorCorrectionLevel: "M",
-          margin: 1,
-          width: 280,
+          margin: 4,
+          width: 320,
+          color: {
+            dark: "#000000",
+            light: "#ffffff",
+          },
         });
         if (!cancelled) setQrDataUrl(dataUrl);
       } catch (e) {
