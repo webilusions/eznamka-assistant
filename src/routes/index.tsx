@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -170,6 +172,16 @@ function VehicleFormPage() {
 
 
 
+  const [summary, setSummary] = useState<null | {
+    licensePlate: string;
+    countryCode: string;
+    vignetteType: string;
+    validityDate: Date;
+    email: string;
+    variableSymbol: string;
+    amount: string;
+  }>(null);
+
   const mutation = useMutation({
     mutationFn: (variables: { data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string } }) =>
       isExternalApiEnabled() ? externalTasksApi.createTask(variables.data) : createTaskFn(variables),
@@ -179,22 +191,21 @@ function VehicleFormPage() {
   });
 
   const onSubmit = async (values: FormValues) => {
-    if (!isExternalApiEnabled()) {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate({ to: "/prihlasenie" });
-        return;
-      }
-    }
-    mutation.mutate({
-      data: {
-        licensePlate: values.licensePlate.toUpperCase().trim(),
-        countryCode: values.countryCode,
-        vignetteType: values.vignetteType,
-        validityDate: values.validityDate.toISOString().split("T")[0],
-        email: values.email.trim(),
-      },
+    const priceMap: Record<string, string> = {
+      "1year": "90.00",
+      "1month": "17.10",
+      "10day": "10.80",
+      "1day": "8.10",
+    };
+    const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    setSummary({
+      licensePlate: values.licensePlate.toUpperCase().trim(),
+      countryCode: values.countryCode,
+      vignetteType: values.vignetteType,
+      validityDate: values.validityDate,
+      email: values.email.trim(),
+      variableSymbol: vs,
+      amount: priceMap[values.vignetteType] ?? "0.00",
     });
   };
 
@@ -537,6 +548,49 @@ function VehicleFormPage() {
         </CardContent>
       </Card>
       </div>
+
+      <Dialog open={!!summary} onOpenChange={(o) => !o && setSummary(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Sumár objednávky</DialogTitle>
+            <DialogDescription>
+              Zaplaťte naskenovaním QR kódu vo vašej bankovej aplikácii.
+            </DialogDescription>
+          </DialogHeader>
+          {summary && (() => {
+            const vt = vignetteTypes.find((v) => v.value === summary.vignetteType);
+            const country = countries.find((c) => c.code === summary.countryCode);
+            const iban = "SK7683300000002603456997";
+            const spd = `SPD*1.0*ACC:${iban}+FIOZSKBAXXX*AM:${summary.amount}*CC:EUR*X-VS:${summary.variableSymbol}*MSG:Dialnicna znamka ${summary.licensePlate}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(spd)}`;
+            return (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-border bg-secondary/40 p-4 text-sm space-y-1.5">
+                  <div className="flex justify-between"><span className="text-muted-foreground">EČV</span><span className="font-medium">{summary.licensePlate}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Krajina</span><span className="font-medium">{country?.name}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Typ známky</span><span className="font-medium">{vt?.title}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Platná od</span><span className="font-medium">{format(summary.validityDate, "dd.MM.yyyy", { locale: sk })}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="font-medium">{summary.email}</span></div>
+                  <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-muted-foreground">Suma</span><span className="font-bold text-primary">{summary.amount} EUR</span></div>
+                </div>
+
+                <div className="flex flex-col items-center gap-2">
+                  <img src={qrUrl} alt="Platobný QR kód" className="rounded-lg border border-border bg-white p-2" width={240} height={240} />
+                  <p className="text-xs text-muted-foreground">PAY by square — naskenujte v mobilnom bankovníctve</p>
+                </div>
+
+                <div className="rounded-lg border border-border p-4 text-sm space-y-1.5">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">2603456997</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">IBAN</span><span className="font-mono">SK76 8330 0000 0026 0345 6997</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">BIC/SWIFT</span><span className="font-mono">FIOZSKBAXXX</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Variabilný symbol</span><span className="font-mono font-bold">{summary.variableSymbol}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Suma</span><span className="font-mono font-bold">{summary.amount} EUR</span></div>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
