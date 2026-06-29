@@ -100,6 +100,15 @@ const vignetteDurationDays: Record<string, number> = {
   "1day": 1,
 };
 
+// Max počet dní vopred, kedy je možné kúpiť známku daného typu
+const vignetteMaxAdvanceDays: Record<string, number> = {
+  "1day": 60, // 1-dňovú len cca 2 mesiace vopred
+  "10day": 30,
+  "1month": 30,
+  "1year": 30,
+};
+
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
