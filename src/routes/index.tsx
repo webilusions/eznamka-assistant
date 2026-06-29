@@ -296,11 +296,19 @@ function VehicleFormPage() {
                         <SelectContent>
                           {countries.map((c) => (
                             <SelectItem key={c.code} value={c.code}>
-                              <span className="mr-2">{c.flag}</span>
-                              {c.name}
+                              <span className="flex items-center gap-2">
+                                <img
+                                  src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
+                                  alt={c.name}
+                                  className="h-4 w-6 rounded-sm object-cover"
+                                  loading="lazy"
+                                />
+                                {c.name}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
+
                       </Select>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {quickCountries.map((c) => (
