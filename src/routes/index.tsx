@@ -529,7 +529,7 @@ function VehicleFormPage() {
                 size="lg"
               >
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Zaplatiť bezpečnou bránou
+                Potvrdiť a zaplatiť
               </Button>
 
             </form>
