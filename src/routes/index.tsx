@@ -26,17 +26,37 @@ import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
-const formSchema = z.object({
-  licensePlate: z
-    .string()
-    .min(3, "EČV musí mať aspoň 3 znaky")
-    .max(15, "EČV je príliš dlhá")
-    .regex(/^[A-Z0-9\- ]+$/i, "Neplatný formát EČV"),
-  countryCode: z.string().min(1, "Vyberte krajinu registrácie"),
-  vignetteType: z.string().min(1, "Vyberte typ známky"),
-  validityDate: z.date({ required_error: "Vyberte dátum platnosti" }),
-  email: z.string().email("Zadajte platný email"),
-});
+const formSchema = z
+  .object({
+    licensePlate: z
+      .string()
+      .min(3, "EČV musí mať aspoň 3 znaky")
+      .max(15, "EČV je príliš dlhá")
+      .regex(/^[A-Z0-9\- ]+$/i, "Neplatný formát EČV"),
+    countryCode: z.string().min(1, "Vyberte krajinu registrácie"),
+    vignetteType: z.string().min(1, "Vyberte typ známky"),
+    validityDate: z.date({ required_error: "Vyberte dátum platnosti" }),
+    email: z.string().email("Zadajte platný email"),
+  })
+  .superRefine((val, ctx) => {
+    const max = vignetteMaxAdvanceDays[val.vignetteType];
+    if (max && val.validityDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const limit = addDays(today, max);
+      if (val.validityDate > limit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["validityDate"],
+          message:
+            val.vignetteType === "1day"
+              ? `1-dňovú známku je možné kúpiť max. ${max} dní vopred (do ${format(limit, "dd.MM.yyyy")})`
+              : `Túto známku je možné kúpiť max. ${max} dní vopred (do ${format(limit, "dd.MM.yyyy")})`,
+        });
+      }
+    }
+  });
+
 
 type FormValues = z.infer<typeof formSchema>;
 
