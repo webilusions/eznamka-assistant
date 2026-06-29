@@ -44,7 +44,7 @@ const formSchema = z
     countryCode: z.string().min(1, "Vyberte krajinu registrácie"),
     vignetteType: z.string().min(1, "Vyberte typ známky"),
     validityDate: z.date({ required_error: "Vyberte dátum platnosti" }),
-    email: z.string().email("Zadajte platný email"),
+    email: z.string().trim().min(1, "Email je povinný").email("Zadajte platný email"),
   })
   .superRefine((val, ctx) => {
     const max = vignetteMaxAdvanceDays[val.vignetteType];
