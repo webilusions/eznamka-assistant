@@ -103,18 +103,53 @@ export async function runPurchase(task, log, shot) {
     await log("captcha_start", "Riešim reCAPTCHA cez Capsolver…");
     const token = await solveCaptcha(page.url());
     await page.evaluate((tok) => {
-      const ta = document.querySelector('textarea[name="g-recaptcha-response"]');
-      if (ta) {
+      document.querySelectorAll('textarea[name="g-recaptcha-response"]').forEach((ta) => {
         ta.style.display = "block";
         ta.value = tok;
-      }
+        ta.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      // Fire reCAPTCHA callback if present
+      try {
+        if (window.___grecaptcha_cfg && window.___grecaptcha_cfg.clients) {
+          const findCb = (obj) => {
+            for (const k in obj) {
+              const v = obj[k];
+              if (v && typeof v === "object") {
+                if (typeof v.callback === "function") { v.callback(tok); return true; }
+                if (findCb(v)) return true;
+              }
+            }
+            return false;
+          };
+          findCb(window.___grecaptcha_cfg.clients);
+        }
+      } catch (e) {}
     }, token);
     await log("captcha_solved", "Captcha vyriešená");
 
-    // Potvrdiť
+    // Zaškrtni všetky required checkboxy (GDPR, súhlas s podmienkami)
+    const checkboxes = await page.locator('input[type="checkbox"]').all();
+    for (const cb of checkboxes) {
+      try {
+        if (!(await cb.isChecked())) await cb.check({ force: true });
+      } catch {}
+    }
+    await page.waitForTimeout(500);
+    await shot("before_submit", await page.screenshot());
+
+    // Potvrdiť – počkaj kým sa enabluje
+    const submitBtn = page.locator('#button-purchase-confirm');
+    await submitBtn.waitFor({ state: "visible", timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        const b = document.querySelector('#button-purchase-confirm');
+        return b && !b.disabled && !b.classList.contains('ui-state-disabled');
+      },
+      { timeout: 30000 }
+    );
     await Promise.all([
       page.waitForURL(/payment|gp-webpay|besteron|tatra|gopay|stripe|checkout/i, { timeout: 30000 }).catch(() => {}),
-      page.getByRole("button", { name: /Potvrdiť|Pokračovať|Zaplatiť/i }).first().click(),
+      submitBtn.click(),
     ]);
 
     await shot("after_submit", await page.screenshot());
