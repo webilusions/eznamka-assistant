@@ -211,9 +211,6 @@ export async function runPurchase(task, log, shot) {
     // Klik na POTVRDIŤ na stránke výberu platby
     const confirmSelectors = [
       '#button-payment-confirm',
-      'input[type="submit"][value*="Zaplat" i]',
-      'button:has-text("Zaplatiť")',
-      'input[value*="Zaplat" i]',
       'input[type="submit"][value*="Potvrd" i]',
       'button:has-text("Potvrdiť")',
       'input[value*="Potvrd" i]',
