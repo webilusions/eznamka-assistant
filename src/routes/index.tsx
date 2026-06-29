@@ -375,11 +375,24 @@ function VehicleFormPage() {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          disabled={(date) => {
+                            const today = new Date(new Date().setHours(0, 0, 0, 0));
+                            if (date < today) return true;
+                            if (maxDate && date > maxDate) return true;
+                            return false;
+                          }}
                           locale={sk}
                           initialFocus
                           className="pointer-events-auto"
                         />
+                        {maxDate && (
+                          <p className="px-3 pb-2 text-xs text-muted-foreground">
+                            {watchedVignette === "1day"
+                              ? `1-dňová známka: max. do ${format(maxDate, "dd.MM.yyyy", { locale: sk })}`
+                              : `Max. dátum: ${format(maxDate, "dd.MM.yyyy", { locale: sk })}`}
+                          </p>
+                        )}
+
                       </PopoverContent>
                     </Popover>
                     <FormMessage />
