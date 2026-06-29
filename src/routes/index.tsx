@@ -340,10 +340,10 @@ function VehicleFormPage() {
                             key={v.value}
                             onClick={() => field.onChange(v.value)}
                             className={cn(
-                              "rounded-lg border-2 p-3 text-left transition bg-[#d6e9f5]",
+                              "rounded-xl border-2 p-3 text-left transition",
                               selected
-                                ? "border-primary ring-2 ring-primary/30"
-                                : "border-transparent hover:border-primary/40"
+                                ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                                : "border-border bg-secondary/40 hover:border-primary/40"
                             )}
                           >
                             <div className="mb-2 text-sm font-bold text-foreground">
@@ -358,7 +358,7 @@ function VehicleFormPage() {
                               >
                                 {v.badge}
                               </div>
-                              <div className="flex-1 rounded bg-white p-2 text-xs">
+                              <div className="flex-1 rounded bg-background/60 p-2 text-xs">
                                 <div className="text-muted-foreground">Platnosť</div>
                                 <div className="font-semibold text-foreground">{v.validity}</div>
                                 <div className="mt-1 text-muted-foreground">Cena s DPH</div>
@@ -366,6 +366,7 @@ function VehicleFormPage() {
                               </div>
                             </div>
                           </button>
+
                         );
                       })}
                     </div>
