@@ -26,7 +26,15 @@ import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
+const vignetteMaxAdvanceDays: Record<string, number> = {
+  "1day": 60,
+  "10day": 30,
+  "1month": 30,
+  "1year": 30,
+};
+
 const formSchema = z
+
   .object({
     licensePlate: z
       .string()
