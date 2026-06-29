@@ -260,70 +260,73 @@ function VehicleFormPage() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <FormField
-                control={form.control}
-                name="licensePlate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>EČV (Evidenčné číslo vozidla)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=" napr. BA123AB"
-                        {...field}
-                        className="uppercase"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="countryCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Krajina registrácie vozidla <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="licensePlate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>EČV (Evidenčné číslo vozidla)</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Vyberte krajinu" />
-                        </SelectTrigger>
+                        <Input
+                          placeholder=" napr. BA123AB"
+                          {...field}
+                          className="uppercase"
+                        />
                       </FormControl>
-                      <SelectContent>
-                        {countries.map((c) => (
-                          <SelectItem key={c.code} value={c.code}>
-                            <span className="mr-2">{c.flag}</span>
-                            {c.name}
-                          </SelectItem>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="countryCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Krajina registrácie vozidla <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Vyberte krajinu" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {countries.map((c) => (
+                            <SelectItem key={c.code} value={c.code}>
+                              <span className="mr-2">{c.flag}</span>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {quickCountries.map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => field.onChange(c.code)}
+                            aria-label={c.name}
+                            title={c.name}
+                            className={cn(
+                              "flex h-9 w-12 items-center justify-center rounded-md border text-xl transition",
+                              field.value === c.code
+                                ? "border-primary ring-2 ring-primary/30"
+                                : "border-border hover:border-primary/50"
+                            )}
+                          >
+                            {c.flag}
+                          </button>
                         ))}
-                      </SelectContent>
-                    </Select>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {quickCountries.map((c) => (
-                        <button
-                          key={c.code}
-                          type="button"
-                          onClick={() => field.onChange(c.code)}
-                          aria-label={c.name}
-                          title={c.name}
-                          className={cn(
-                            "flex h-9 w-12 items-center justify-center rounded-md border text-xl transition",
-                            field.value === c.code
-                              ? "border-primary ring-2 ring-primary/30"
-                              : "border-border hover:border-primary/50"
-                          )}
-                        >
-                          {c.flag}
-                        </button>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
 
               <FormField
                 control={form.control}
