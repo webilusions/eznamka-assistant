@@ -7,7 +7,7 @@
 
 import { chromium } from "playwright";
 
-const CAPSOLVER_KEY = process.env.CAPSOLVER_API_KEY;
+const CAPSOLVER_KEY = () => process.env.CAPSOLVER_API_KEY;
 const SITE_URL = "https://eznamka.sk/selfcare/purchase/";
 const SITE_KEY = "6LfHAjkUAAAAADameCOtUdnICQbHOiH4Xqt1lMAw";
 
