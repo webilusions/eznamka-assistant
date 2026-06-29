@@ -472,7 +472,7 @@ function VehicleFormPage() {
                 size="lg"
               >
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Vytvoriť úlohu a spustiť automatizáciu
+                Zaplatiť
               </Button>
             </form>
           </Form>
