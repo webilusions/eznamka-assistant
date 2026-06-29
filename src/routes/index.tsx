@@ -199,42 +199,50 @@ function VehicleFormPage() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-h-screen w-full overflow-hidden bg-background selection:bg-primary/30">
+      {/* Ambient background glows */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[480px]"
-        style={{ background: "var(--gradient-hero)" }}
+        className="pointer-events-none absolute -top-32 -right-32 -z-0 h-[420px] w-[420px] rounded-full blur-[120px]"
+        style={{ background: "oklch(0.74 0.14 230 / 0.18)" }}
       />
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
-        {/* Left: hero copy */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Automatizácia eznamka.sk
-          </span>
-          <h1 className="mt-5 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            Diaľničná známka <span className="bg-gradient-to-r from-primary to-[oklch(0.55_0.2_240)] bg-clip-text text-transparent">na pár klikov</span>
-          </h1>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-            Zadáte údaje, my pripravíme objednávku až po platobnú bránu. Žiadne hľadanie v kalendári, žiadne preklepy v EČV.
-          </p>
-          <ul className="mt-6 space-y-3 text-sm text-foreground">
-            {[
-              "EČV, krajina, typ známky a dátum",
-              "Automatické riešenie reCAPTCHA",
-              "QR kód TatraPay na konci",
-            ].map((t) => (
-              <li key={t} className="flex items-start gap-2">
-                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </aside>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-32 -left-32 -z-0 h-[420px] w-[420px] rounded-full blur-[120px]"
+        style={{ background: "oklch(0.55 0.18 280 / 0.18)" }}
+      />
 
-        {/* Right: form card */}
-        <Card className="border-border/60 shadow-[var(--shadow-elegant)]">
-          <CardHeader>
+      <div className="relative z-10 mx-auto w-full max-w-2xl px-4 py-12 sm:py-16">
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            </span>
+            Oficiálny predaj
+          </div>
+          <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            Diaľničná známka
+          </h1>
+          <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+            Kúpte si elektronickú známku rýchlo a bezpečne.
+          </p>
+        </div>
+
+        {/* Main Form Card */}
+        <Card className="relative overflow-hidden rounded-3xl border-border bg-card p-2 shadow-2xl">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full blur-[100px]"
+            style={{ background: "oklch(0.74 0.14 230 / 0.10)" }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full blur-[100px]"
+            style={{ background: "oklch(0.55 0.18 280 / 0.10)" }}
+          />
+          <CardHeader className="relative">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Car className="h-5 w-5 text-primary" />
@@ -247,7 +255,8 @@ function VehicleFormPage() {
               </div>
             </div>
           </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
+
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -331,10 +340,10 @@ function VehicleFormPage() {
                             key={v.value}
                             onClick={() => field.onChange(v.value)}
                             className={cn(
-                              "rounded-lg border-2 p-3 text-left transition bg-[#d6e9f5]",
+                              "rounded-xl border-2 p-3 text-left transition",
                               selected
-                                ? "border-primary ring-2 ring-primary/30"
-                                : "border-transparent hover:border-primary/40"
+                                ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                                : "border-border bg-secondary/40 hover:border-primary/40"
                             )}
                           >
                             <div className="mb-2 text-sm font-bold text-foreground">
@@ -349,7 +358,7 @@ function VehicleFormPage() {
                               >
                                 {v.badge}
                               </div>
-                              <div className="flex-1 rounded bg-white p-2 text-xs">
+                              <div className="flex-1 rounded bg-background/60 p-2 text-xs">
                                 <div className="text-muted-foreground">Platnosť</div>
                                 <div className="font-semibold text-foreground">{v.validity}</div>
                                 <div className="mt-1 text-muted-foreground">Cena s DPH</div>
@@ -357,6 +366,7 @@ function VehicleFormPage() {
                               </div>
                             </div>
                           </button>
+
                         );
                       })}
                     </div>
@@ -496,13 +506,14 @@ function VehicleFormPage() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full rounded-2xl bg-primary py-6 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.98]"
                 disabled={mutation.isPending}
                 size="lg"
               >
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Zaplatiť
+                Zaplatiť bezpečnou bránou
               </Button>
+
             </form>
           </Form>
         </CardContent>
