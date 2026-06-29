@@ -205,8 +205,43 @@ export async function runPurchase(task, log, shot) {
     }
     if (!clicked) await log("payment_select", "TatraPay tlačidlo sa nepodarilo nájsť", "warn");
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1500);
     await shot("tatrapay", await page.screenshot());
+
+    // Klik na POTVRDIŤ na stránke výberu platby
+    const confirmSelectors = [
+      '#button-payment-confirm',
+      'input[type="submit"][value*="Potvrd" i]',
+      'button:has-text("Potvrdiť")',
+      'input[value*="Potvrd" i]',
+    ];
+    let confirmed = false;
+    for (const sel of confirmSelectors) {
+      const el = page.locator(sel).first();
+      if (await el.count().catch(() => 0)) {
+        try {
+          await page.waitForFunction(
+            (s) => {
+              const b = document.querySelector(s);
+              return b && !b.disabled && !b.classList.contains("ui-state-disabled");
+            },
+            sel,
+            { timeout: 15000 }
+          ).catch(() => {});
+          await Promise.all([
+            page.waitForNavigation({ timeout: 30000 }).catch(() => {}),
+            el.click({ timeout: 5000 }),
+          ]);
+          confirmed = true;
+          await log("payment_confirm", `Potvrdiť kliknuté (${sel})`);
+          break;
+        } catch {}
+      }
+    }
+    if (!confirmed) await log("payment_confirm", "Potvrdiť sa nepodarilo nájsť", "warn");
+
+    await page.waitForTimeout(3000);
+    await shot("payment_page", await page.screenshot());
     const paymentUrl = page.url();
     await log("done", `Platobná URL: ${paymentUrl}`);
 
