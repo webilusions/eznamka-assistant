@@ -310,7 +310,7 @@ function VehicleFormPage() {
                         </SelectContent>
 
                       </Select>
-                      <div className="mt-2 flex flex-nowrap gap-1">
+                      <div className="mt-2 grid w-full gap-1" style={{ gridTemplateColumns: `repeat(${quickCountries.length}, minmax(0, 1fr))` }}>
                         {quickCountries.map((c) => (
                           <button
                             key={c.code}
@@ -319,7 +319,7 @@ function VehicleFormPage() {
                             aria-label={c.name}
                             title={c.name}
                             className={cn(
-                              "flex h-7 w-10 items-center justify-center overflow-hidden rounded-none transition",
+                              "flex h-8 w-full items-center justify-center overflow-hidden rounded-none transition",
                               field.value === c.code
                                 ? "ring-2 ring-primary"
                                 : "opacity-70 hover:opacity-100"
