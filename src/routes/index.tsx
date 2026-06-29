@@ -199,27 +199,56 @@ function VehicleFormPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
-      <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-          <Car className="h-7 w-7 text-primary" />
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Nákup známky
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Zadajte údaje o vozidle a pripravíme nákup diaľničnej známky
-        </p>
-      </div>
+    <div className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[480px]"
+        style={{ background: "var(--gradient-hero)" }}
+      />
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
+        {/* Left: hero copy */}
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            Automatizácia eznamka.sk
+          </span>
+          <h1 className="mt-5 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            Diaľničná známka <span className="bg-gradient-to-r from-primary to-[oklch(0.55_0.2_240)] bg-clip-text text-transparent">na pár klikov</span>
+          </h1>
+          <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
+            Zadáte údaje, my pripravíme objednávku až po platobnú bránu. Žiadne hľadanie v kalendári, žiadne preklepy v EČV.
+          </p>
+          <ul className="mt-6 space-y-3 text-sm text-foreground">
+            {[
+              "EČV, krajina, typ známky a dátum",
+              "Automatické riešenie reCAPTCHA",
+              "QR kód TatraPay na konci",
+            ].map((t) => (
+              <li key={t} className="flex items-start gap-2">
+                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Údaje o vozidle</CardTitle>
-          <CardDescription>
-            Vyplňte všetky polia pre automatizovanú prípravu nákupu
-          </CardDescription>
-        </CardHeader>
+        {/* Right: form card */}
+        <Card className="border-border/60 shadow-[var(--shadow-elegant)]">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <Car className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Údaje o vozidle</CardTitle>
+                <CardDescription>
+                  Vyplňte polia pre prípravu nákupu
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
         <CardContent>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
