@@ -26,17 +26,45 @@ import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
-const formSchema = z.object({
-  licensePlate: z
-    .string()
-    .min(3, "EČV musí mať aspoň 3 znaky")
-    .max(15, "EČV je príliš dlhá")
-    .regex(/^[A-Z0-9\- ]+$/i, "Neplatný formát EČV"),
-  countryCode: z.string().min(1, "Vyberte krajinu registrácie"),
-  vignetteType: z.string().min(1, "Vyberte typ známky"),
-  validityDate: z.date({ required_error: "Vyberte dátum platnosti" }),
-  email: z.string().email("Zadajte platný email"),
-});
+const vignetteMaxAdvanceDays: Record<string, number> = {
+  "1day": 60,
+  "10day": 30,
+  "1month": 30,
+  "1year": 30,
+};
+
+const formSchema = z
+
+  .object({
+    licensePlate: z
+      .string()
+      .min(3, "EČV musí mať aspoň 3 znaky")
+      .max(15, "EČV je príliš dlhá")
+      .regex(/^[A-Z0-9\- ]+$/i, "Neplatný formát EČV"),
+    countryCode: z.string().min(1, "Vyberte krajinu registrácie"),
+    vignetteType: z.string().min(1, "Vyberte typ známky"),
+    validityDate: z.date({ required_error: "Vyberte dátum platnosti" }),
+    email: z.string().email("Zadajte platný email"),
+  })
+  .superRefine((val, ctx) => {
+    const max = vignetteMaxAdvanceDays[val.vignetteType];
+    if (max && val.validityDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const limit = addDays(today, max);
+      if (val.validityDate > limit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["validityDate"],
+          message:
+            val.vignetteType === "1day"
+              ? `1-dňovú známku je možné kúpiť max. ${max} dní vopred (do ${format(limit, "dd.MM.yyyy")})`
+              : `Túto známku je možné kúpiť max. ${max} dní vopred (do ${format(limit, "dd.MM.yyyy")})`,
+        });
+      }
+    }
+  });
+
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -101,6 +129,8 @@ const vignetteDurationDays: Record<string, number> = {
 };
 
 
+
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -132,6 +162,12 @@ function VehicleFormPage() {
     watchedDate && vignetteDurationDays[watchedVignette]
       ? addDays(watchedDate, vignetteDurationDays[watchedVignette] - 1)
       : null;
+
+  const maxAdvanceDays = vignetteMaxAdvanceDays[watchedVignette];
+  const maxDate = maxAdvanceDays
+    ? addDays(new Date(new Date().setHours(0, 0, 0, 0)), maxAdvanceDays)
+    : null;
+
 
 
   const mutation = useMutation({
@@ -339,11 +375,24 @@ function VehicleFormPage() {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          disabled={(date) => {
+                            const today = new Date(new Date().setHours(0, 0, 0, 0));
+                            if (date < today) return true;
+                            if (maxDate && date > maxDate) return true;
+                            return false;
+                          }}
                           locale={sk}
                           initialFocus
                           className="pointer-events-auto"
                         />
+                        {maxDate && (
+                          <p className="px-3 pb-2 text-xs text-muted-foreground">
+                            {watchedVignette === "1day"
+                              ? `1-dňová známka: max. do ${format(maxDate, "dd.MM.yyyy", { locale: sk })}`
+                              : `Max. dátum: ${format(maxDate, "dd.MM.yyyy", { locale: sk })}`}
+                          </p>
+                        )}
+
                       </PopoverContent>
                     </Popover>
                     <FormMessage />
