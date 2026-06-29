@@ -172,6 +172,16 @@ function VehicleFormPage() {
 
 
 
+  const [summary, setSummary] = useState<null | {
+    licensePlate: string;
+    countryCode: string;
+    vignetteType: string;
+    validityDate: Date;
+    email: string;
+    variableSymbol: string;
+    amount: string;
+  }>(null);
+
   const mutation = useMutation({
     mutationFn: (variables: { data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string } }) =>
       isExternalApiEnabled() ? externalTasksApi.createTask(variables.data) : createTaskFn(variables),
@@ -181,22 +191,21 @@ function VehicleFormPage() {
   });
 
   const onSubmit = async (values: FormValues) => {
-    if (!isExternalApiEnabled()) {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate({ to: "/prihlasenie" });
-        return;
-      }
-    }
-    mutation.mutate({
-      data: {
-        licensePlate: values.licensePlate.toUpperCase().trim(),
-        countryCode: values.countryCode,
-        vignetteType: values.vignetteType,
-        validityDate: values.validityDate.toISOString().split("T")[0],
-        email: values.email.trim(),
-      },
+    const priceMap: Record<string, string> = {
+      "1year": "90.00",
+      "1month": "17.10",
+      "10day": "10.80",
+      "1day": "8.10",
+    };
+    const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    setSummary({
+      licensePlate: values.licensePlate.toUpperCase().trim(),
+      countryCode: values.countryCode,
+      vignetteType: values.vignetteType,
+      validityDate: values.validityDate,
+      email: values.email.trim(),
+      variableSymbol: vs,
+      amount: priceMap[values.vignetteType] ?? "0.00",
     });
   };
 
