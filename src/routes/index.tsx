@@ -320,7 +320,7 @@ function VehicleFormPage() {
                             aria-label={c.name}
                             title={c.name}
                             className={cn(
-                              "flex h-8 w-full items-center justify-center overflow-hidden rounded-none transition",
+                              "flex h-6 w-full items-center justify-center overflow-hidden rounded-none transition",
                               field.value === c.code
                                 ? "ring-2 ring-primary"
                                 : "opacity-70 hover:opacity-100"
