@@ -506,13 +506,14 @@ function VehicleFormPage() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full rounded-2xl bg-primary py-6 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.98]"
                 disabled={mutation.isPending}
                 size="lg"
               >
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Zaplatiť
+                Zaplatiť bezpečnou bránou
               </Button>
+
             </form>
           </Form>
         </CardContent>
