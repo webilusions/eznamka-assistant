@@ -96,6 +96,29 @@ export async function runPurchase(task, log, shot) {
     const emailAgain = page.locator('input[name="Vignette.EmailAgain"]');
     if (await emailAgain.count()) await emailAgain.fill(task.email);
 
+    // Dátum platnosti (Vignette.ValidFrom) – preformátuj na DD.MM.YYYY
+    if (task.validity_date) {
+      const d = new Date(task.validity_date);
+      const formatted = `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+      const dateInput = page.locator('input[name="Vignette.ValidFrom"]');
+      if (await dateInput.count()) {
+        // jQuery datepicker – nastav cez JS aby preskočil maskovanie
+        await page.evaluate(
+          ({ val }) => {
+            const el = document.querySelector('input[name="Vignette.ValidFrom"]');
+            if (el) {
+              el.value = val;
+              el.dispatchEvent(new Event("input", { bubbles: true }));
+              el.dispatchEvent(new Event("change", { bubbles: true }));
+              if (window.jQuery) window.jQuery(el).trigger("change");
+            }
+          },
+          { val: formatted }
+        );
+        await log("date_set", `Dátum platnosti: ${formatted}`);
+      }
+    }
+
     await shot("form_filled", await page.screenshot());
     await log("form_filled", "Formulár vyplnený");
 
