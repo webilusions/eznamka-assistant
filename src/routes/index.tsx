@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { generate, DataModel, PaymentOptions } from "bysquare";
+import { encode, PaymentOptions, CurrencyCode } from "bysquare/pay";
 import QRCode from "qrcode";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
