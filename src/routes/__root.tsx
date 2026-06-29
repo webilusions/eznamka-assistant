@@ -256,7 +256,7 @@ function RootComponent() {
         </main>
 
         <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-          <p>eZnamka Automatizácia — Automatizácia sa zastaví pred platbou. Platbu vykonajte ručne.</p>
+          <p>© {new Date().getFullYear()} eZnamka Automatizácia. Všetky práva vyhradené.</p>
         </footer>
       </div>
     </QueryClientProvider>
