@@ -215,13 +215,6 @@ function VehicleFormPage() {
       <div className="relative z-10 mx-auto w-full max-w-2xl px-4 py-12 sm:py-16">
         {/* Header */}
         <div className="mb-10 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-            </span>
-            Oficiálny predaj
-          </div>
           <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             Diaľničná známka
           </h1>
