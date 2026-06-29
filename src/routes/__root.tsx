@@ -30,6 +30,7 @@ import {
   X,
   Play,
   ShieldCheck,
+  Wallet,
 } from "lucide-react";
 
 function NotFoundComponent() {
