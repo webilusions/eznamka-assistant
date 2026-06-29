@@ -153,6 +153,37 @@ export async function runPurchase(task, log, shot) {
     ]);
 
     await shot("after_submit", await page.screenshot());
+    await log("payment_select", "Vyberám TatraPay…");
+
+    // Klik na TatraPay (logo/link/radio – skús viacero variantov)
+    const tatraSelectors = [
+      'img[alt*="TatraPay" i]',
+      'img[src*="tatrapay" i]',
+      'a[href*="tatrapay" i]',
+      'label:has-text("TatraPay")',
+      'input[value*="tatrapay" i]',
+      'button:has-text("TatraPay")',
+      ':text-matches("TatraPay", "i")',
+    ];
+    let clicked = false;
+    for (const sel of tatraSelectors) {
+      const el = page.locator(sel).first();
+      if (await el.count().catch(() => 0)) {
+        try {
+          await Promise.all([
+            page.waitForLoadState("networkidle", { timeout: 20000 }).catch(() => {}),
+            el.click({ timeout: 5000 }),
+          ]);
+          clicked = true;
+          await log("payment_select", `TatraPay kliknuté (${sel})`);
+          break;
+        } catch {}
+      }
+    }
+    if (!clicked) await log("payment_select", "TatraPay tlačidlo sa nepodarilo nájsť", "warn");
+
+    await page.waitForTimeout(2000);
+    await shot("tatrapay", await page.screenshot());
     const paymentUrl = page.url();
     await log("done", `Platobná URL: ${paymentUrl}`);
 
