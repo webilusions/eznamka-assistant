@@ -207,6 +207,62 @@ app.post("/api/tasks/:id/run", async (req, res) => {
   }
 });
 
+// GET /api/fio/account — Fio banka transakcie a zostatok
+app.get("/api/fio/account", async (req, res) => {
+  try {
+    const token = process.env.FIO_TOKEN;
+    if (!token) return res.status(500).json({ error: "FIO_TOKEN chýba v .env" });
+
+    const days = Math.min(parseInt(req.query.days) || 30, 90);
+    const to = new Date();
+    const from = new Date(Date.now() - days * 86400000);
+    const fmt = (d) => d.toISOString().slice(0, 10);
+    const url = `https://fioapi.fio.cz/v1/rest/periods/${token}/${fmt(from)}/${fmt(to)}/transactions.json`;
+
+    const r = await fetch(url);
+    if (!r.ok) {
+      const text = await r.text();
+      return res.status(r.status).json({ error: `Fio API ${r.status}`, detail: text.slice(0, 500) });
+    }
+    const data = await r.json();
+    const info = data?.accountStatement?.info || {};
+    const txs = (data?.accountStatement?.transactionList?.transaction || []).map((t) => {
+      const get = (id) => t[`column${id}`]?.value;
+      return {
+        id: get(22),
+        date: get(0),
+        amount: get(1),
+        currency: get(14),
+        counterAccount: get(2),
+        counterName: get(10),
+        bankCode: get(3),
+        bankName: get(12),
+        vs: get(5),
+        ks: get(4),
+        ss: get(6),
+        message: get(16) || get(25),
+        note: get(25),
+        type: get(8),
+      };
+    });
+    res.json({
+      account: {
+        accountId: info.accountId,
+        bankId: info.bankId,
+        currency: info.currency,
+        iban: info.iban,
+        openingBalance: info.openingBalance,
+        closingBalance: info.closingBalance,
+        dateStart: info.dateStart,
+        dateEnd: info.dateEnd,
+      },
+      transactions: txs,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Backend beží na porte ${PORT}`);
 });

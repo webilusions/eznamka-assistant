@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrihlasenieRouteImport } from './routes/prihlasenie'
+import { Route as FioRouteImport } from './routes/fio'
 import { Route as CheckRouteImport } from './routes/check'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TasksIndexRouteImport } from './routes/tasks.index'
@@ -18,6 +19,11 @@ import { Route as TasksTaskIdRouteImport } from './routes/tasks.$taskId'
 const PrihlasenieRoute = PrihlasenieRouteImport.update({
   id: '/prihlasenie',
   path: '/prihlasenie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FioRoute = FioRouteImport.update({
+  id: '/fio',
+  path: '/fio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckRoute = CheckRouteImport.update({
@@ -44,6 +50,7 @@ const TasksTaskIdRoute = TasksTaskIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/check': typeof CheckRoute
+  '/fio': typeof FioRoute
   '/prihlasenie': typeof PrihlasenieRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/': typeof TasksIndexRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/check': typeof CheckRoute
+  '/fio': typeof FioRoute
   '/prihlasenie': typeof PrihlasenieRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks': typeof TasksIndexRoute
@@ -59,19 +67,27 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/check': typeof CheckRoute
+  '/fio': typeof FioRoute
   '/prihlasenie': typeof PrihlasenieRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/': typeof TasksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/check' | '/prihlasenie' | '/tasks/$taskId' | '/tasks/'
+  fullPaths:
+    | '/'
+    | '/check'
+    | '/fio'
+    | '/prihlasenie'
+    | '/tasks/$taskId'
+    | '/tasks/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/check' | '/prihlasenie' | '/tasks/$taskId' | '/tasks'
+  to: '/' | '/check' | '/fio' | '/prihlasenie' | '/tasks/$taskId' | '/tasks'
   id:
     | '__root__'
     | '/'
     | '/check'
+    | '/fio'
     | '/prihlasenie'
     | '/tasks/$taskId'
     | '/tasks/'
@@ -80,6 +96,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CheckRoute: typeof CheckRoute
+  FioRoute: typeof FioRoute
   PrihlasenieRoute: typeof PrihlasenieRoute
   TasksTaskIdRoute: typeof TasksTaskIdRoute
   TasksIndexRoute: typeof TasksIndexRoute
@@ -92,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/prihlasenie'
       fullPath: '/prihlasenie'
       preLoaderRoute: typeof PrihlasenieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fio': {
+      id: '/fio'
+      path: '/fio'
+      fullPath: '/fio'
+      preLoaderRoute: typeof FioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/check': {
@@ -128,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckRoute: CheckRoute,
+  FioRoute: FioRoute,
   PrihlasenieRoute: PrihlasenieRoute,
   TasksTaskIdRoute: TasksTaskIdRoute,
   TasksIndexRoute: TasksIndexRoute,
