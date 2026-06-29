@@ -342,7 +342,9 @@ function VehicleFormPage() {
                 name="vignetteType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Typ diaľničnej známky</FormLabel>
+                    <FormLabel>
+                      Typ diaľničnej známky <span className="text-destructive">*</span>
+                    </FormLabel>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {vignetteTypes.map((v) => {
                         const selected = field.value === v.value;
@@ -481,7 +483,9 @@ function VehicleFormPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email pre potvrdenie *</FormLabel>
+                    <FormLabel>
+                      Email pre potvrdenie <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="vas@email.sk" {...field} />
                     </FormControl>
