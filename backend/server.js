@@ -1,10 +1,16 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
 import { z } from "zod";
+import path from "path";
+import { fileURLToPath } from "url";
 import { runPurchase } from "./runner.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const {
   PORT = 3001,
