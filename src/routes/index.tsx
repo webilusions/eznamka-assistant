@@ -300,9 +300,10 @@ function VehicleFormPage() {
                                 <img
                                   src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
                                   alt={c.name}
-                                  className="h-4 w-6 rounded-sm object-cover"
+                                  className="h-3.5 w-5 object-cover"
                                   loading="lazy"
                                 />
+
                                 {c.name}
                               </span>
                             </SelectItem>
