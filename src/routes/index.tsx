@@ -507,6 +507,7 @@ function VehicleFormPage() {
           </Form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
