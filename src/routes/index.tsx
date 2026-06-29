@@ -259,7 +259,7 @@ function VehicleFormPage() {
                   name="licensePlate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>EČV (Evidenčné číslo vozidla)</FormLabel>
+                      <FormLabel>EČV (Evidenčné číslo vozidla) <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input
                           placeholder=" napr. BA123AB"
