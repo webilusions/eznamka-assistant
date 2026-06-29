@@ -176,6 +176,7 @@ function RootComponent() {
                 <>
                   <NavLink to="/" icon={<Play className="h-4 w-4" />} label="Nákup známky" />
                   <NavLink to="/tasks" icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
+                  <NavLink to="/fio" icon={<Wallet className="h-4 w-4" />} label="Fio účet" />
                 </>
               )}
             </nav>
