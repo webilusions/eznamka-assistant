@@ -483,7 +483,9 @@ function VehicleFormPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email pre potvrdenie *</FormLabel>
+                    <FormLabel>
+                      Email pre potvrdenie <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="vas@email.sk" {...field} />
                     </FormControl>
