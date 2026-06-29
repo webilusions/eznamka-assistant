@@ -163,6 +163,12 @@ function VehicleFormPage() {
       ? addDays(watchedDate, vignetteDurationDays[watchedVignette] - 1)
       : null;
 
+  const maxAdvanceDays = vignetteMaxAdvanceDays[watchedVignette];
+  const maxDate = maxAdvanceDays
+    ? addDays(new Date(new Date().setHours(0, 0, 0, 0)), maxAdvanceDays)
+    : null;
+
+
 
   const mutation = useMutation({
     mutationFn: (variables: { data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string } }) =>
