@@ -25,8 +25,16 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Neznáma chyba" }));
-    throw new Error(err.error || `HTTP ${res.status}`);
+    const text = await res.text();
+    let msg = `HTTP ${res.status}`;
+    try {
+      const j = JSON.parse(text);
+      msg = j.error || j.message || msg;
+      if (j.detail) msg += ` — ${j.detail}`;
+    } catch {
+      if (text) msg += `: ${text.slice(0, 200)}`;
+    }
+    throw new Error(msg);
   }
 
   return res.json();
