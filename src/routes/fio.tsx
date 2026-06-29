@@ -135,7 +135,7 @@ function FioPage() {
                           </p>
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                          {t.date && <span>{new Date(t.date).toLocaleDateString("sk-SK")}</span>}
+                          {t.date && <span>{(() => { const m = t.date.match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[3]}.${+m[2]}.${m[1]}` : t.date; })()}</span>}
                           {t.counterAccount && (
                             <span className="font-mono">
                               {t.counterAccount}
