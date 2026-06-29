@@ -310,7 +310,7 @@ function VehicleFormPage() {
                         </SelectContent>
 
                       </Select>
-                      <div className="mt-2 flex flex-wrap gap-2">
+                      <div className="mt-2 flex flex-nowrap gap-1">
                         {quickCountries.map((c) => (
                           <button
                             key={c.code}
@@ -319,19 +319,20 @@ function VehicleFormPage() {
                             aria-label={c.name}
                             title={c.name}
                             className={cn(
-                              "flex h-9 w-12 items-center justify-center overflow-hidden rounded-md border transition",
+                              "flex h-7 w-10 items-center justify-center overflow-hidden rounded-sm transition",
                               field.value === c.code
-                                ? "border-primary ring-2 ring-primary/30"
-                                : "border-border hover:border-primary/50"
+                                ? "ring-2 ring-primary"
+                                : "opacity-70 hover:opacity-100"
                             )}
                           >
                             <img
                               src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
                               alt={c.name}
-                              className="h-5 w-8 object-cover"
+                              className="h-full w-full object-cover"
                               loading="lazy"
                             />
                           </button>
+
 
                         ))}
                       </div>
