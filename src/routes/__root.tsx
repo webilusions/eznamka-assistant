@@ -230,6 +230,7 @@ function RootComponent() {
                 <>
                   <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)} icon={<Play className="h-4 w-4" />} label="Nákup známky" />
                   <MobileNavLink to="/tasks" onClick={() => setMobileMenuOpen(false)} icon={<LayoutDashboard className="h-4 w-4" />} label="Úlohy" />
+                  <MobileNavLink to="/fio" onClick={() => setMobileMenuOpen(false)} icon={<Wallet className="h-4 w-4" />} label="Fio účet" />
                   <div className="border-t pt-2 mt-2">
                     <button
                       onClick={() => {
