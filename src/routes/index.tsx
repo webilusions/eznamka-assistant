@@ -667,7 +667,7 @@ function SummaryView({
               ],
             },
           ],
-        } as Parameters<typeof encode>[0], { version: Version["1.0.0"] });
+        } as Parameters<typeof encode>[0], { deburr: true, validate: true, version: Version["1.0.0"] });
 
         const fallbackDataUrl = await QRCode.toDataURL(payload, {
           errorCorrectionLevel: "M",
