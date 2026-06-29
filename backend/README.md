@@ -26,7 +26,7 @@ sudo npx playwright install-deps chromium
 
 # .env
 cp .env.example .env
-nano .env   # vyplň SUPABASE_*, CAPSOLVER_API_KEY
+nano .env   # vyplň SUPABASE_URL, SUPABASE_ANON_KEY, CAPSOLVER_API_KEY
 
 # Spustenie
 pm2 start server.js --name dialnica

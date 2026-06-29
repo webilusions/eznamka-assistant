@@ -10,15 +10,19 @@ const {
   PORT = 3001,
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_ANON_KEY,
+  SUPABASE_PUBLISHABLE_KEY,
   CORS_ORIGIN = "*",
 } = process.env;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("Chýba SUPABASE_URL alebo SUPABASE_SERVICE_ROLE_KEY v .env");
+const SUPABASE_API_KEY = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY || SUPABASE_PUBLISHABLE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_API_KEY) {
+  console.error("Chýba SUPABASE_URL alebo SUPABASE_SERVICE_ROLE_KEY/SUPABASE_ANON_KEY v .env");
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+const supabase = createClient(SUPABASE_URL, SUPABASE_API_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
   realtime: { transport: ws },
 });
