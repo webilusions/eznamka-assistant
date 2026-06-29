@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { encode, PaymentOptions, CurrencyCode } from "bysquare/pay";
+import QRCode from "qrcode";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -560,37 +562,111 @@ function VehicleFormPage() {
           {summary && (() => {
             const vt = vignetteTypes.find((v) => v.value === summary.vignetteType);
             const country = countries.find((c) => c.code === summary.countryCode);
-            const iban = "SK7683300000002603456997";
-            const spd = `SPD*1.0*ACC:${iban}+FIOZSKBAXXX*AM:${summary.amount}*CC:EUR*X-VS:${summary.variableSymbol}*MSG:Dialnicna znamka ${summary.licensePlate}`;
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(spd)}`;
             return (
-              <div className="space-y-4">
-                <div className="rounded-lg border border-border bg-secondary/40 p-4 text-sm space-y-1.5">
-                  <div className="flex justify-between"><span className="text-muted-foreground">EČV</span><span className="font-medium">{summary.licensePlate}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Krajina</span><span className="font-medium">{country?.name}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Typ známky</span><span className="font-medium">{vt?.title}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Platná od</span><span className="font-medium">{format(summary.validityDate, "dd.MM.yyyy", { locale: sk })}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="font-medium">{summary.email}</span></div>
-                  <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-muted-foreground">Suma</span><span className="font-bold text-primary">{summary.amount} EUR</span></div>
-                </div>
-
-                <div className="flex flex-col items-center gap-2">
-                  <img src={qrUrl} alt="Platobný QR kód" className="rounded-lg border border-border bg-white p-2" width={240} height={240} />
-                  <p className="text-xs text-muted-foreground">PAY by square — naskenujte v mobilnom bankovníctve</p>
-                </div>
-
-                <div className="rounded-lg border border-border p-4 text-sm space-y-1.5">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">2603456997</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">IBAN</span><span className="font-mono">SK76 8330 0000 0026 0345 6997</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">BIC/SWIFT</span><span className="font-mono">FIOZSKBAXXX</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Variabilný symbol</span><span className="font-mono font-bold">{summary.variableSymbol}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Suma</span><span className="font-mono font-bold">{summary.amount} EUR</span></div>
-                </div>
-              </div>
+              <SummaryView
+                summary={summary}
+                vignetteTitle={vt?.title}
+                countryName={country?.name}
+              />
             );
           })()}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+type SummaryData = {
+  licensePlate: string;
+  countryCode: string;
+  vignetteType: string;
+  validityDate: Date;
+  email: string;
+  variableSymbol: string;
+  amount: string;
+};
+
+function SummaryView({
+  summary,
+  vignetteTitle,
+  countryName,
+}: {
+  summary: SummaryData;
+  vignetteTitle?: string;
+  countryName?: string;
+}) {
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [qrError, setQrError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const payload = await encode({
+          invoiceId: summary.variableSymbol,
+          payments: [
+            {
+              type: PaymentOptions.PaymentOrder,
+              amount: Number(summary.amount),
+              currencyCode: CurrencyCode.EUR,
+              variableSymbol: summary.variableSymbol,
+              paymentNote: `Dialnicna znamka ${summary.licensePlate}`,
+              bankAccounts: [
+                {
+                  iban: "SK7683300000002603456997",
+                  bic: "FIOZSKBAXXX",
+                },
+              ],
+              beneficiary: {
+                name: "Dialnicna znamka",
+              },
+            },
+          ],
+        });
+        const dataUrl = await QRCode.toDataURL(payload, {
+          errorCorrectionLevel: "M",
+          margin: 1,
+          width: 280,
+        });
+        if (!cancelled) setQrDataUrl(dataUrl);
+      } catch (e) {
+        if (!cancelled) setQrError(e instanceof Error ? e.message : "QR error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [summary]);
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-border bg-secondary/40 p-4 text-sm space-y-1.5">
+        <div className="flex justify-between"><span className="text-muted-foreground">EČV</span><span className="font-medium">{summary.licensePlate}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Krajina</span><span className="font-medium">{countryName}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Typ známky</span><span className="font-medium">{vignetteTitle}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Platná od</span><span className="font-medium">{format(summary.validityDate, "dd.MM.yyyy", { locale: sk })}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="font-medium">{summary.email}</span></div>
+        <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-muted-foreground">Suma</span><span className="font-bold text-primary">{summary.amount} EUR</span></div>
+      </div>
+
+      <div className="flex flex-col items-center gap-2">
+        {qrDataUrl ? (
+          <img src={qrDataUrl} alt="PAY by square QR kód" className="rounded-lg border border-border bg-white p-2" width={240} height={240} />
+        ) : qrError ? (
+          <div className="text-sm text-destructive">Nepodarilo sa vygenerovať QR kód: {qrError}</div>
+        ) : (
+          <div className="h-[240px] w-[240px] animate-pulse rounded-lg bg-secondary" />
+        )}
+        <p className="text-xs text-muted-foreground">PAY by square — naskenujte v mobilnom bankovníctve</p>
+      </div>
+
+      <div className="rounded-lg border border-border p-4 text-sm space-y-1.5">
+        <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">2603456997</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">IBAN</span><span className="font-mono">SK76 8330 0000 0026 0345 6997</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">BIC/SWIFT</span><span className="font-mono">FIOZSKBAXXX</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Variabilný symbol</span><span className="font-mono font-bold">{summary.variableSymbol}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Suma</span><span className="font-mono font-bold">{summary.amount} EUR</span></div>
+      </div>
     </div>
   );
 }
