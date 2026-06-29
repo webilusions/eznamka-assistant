@@ -31,6 +31,37 @@ import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
+const paymentAccount = {
+  accountNumber: "2603456997",
+  iban: "SK7683300000002603456997",
+  ibanFormatted: "SK76 8330 0000 0026 0345 6997",
+  bic: "FIOZSKBAXXX",
+  name: "Kozart",
+};
+
+const normalizePaymentText = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 /\-?:().,'+]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const formatPaymentAmount = (amount: string) => Number.parseFloat(amount).toFixed(2);
+
+const buildPaymePaymentUrl = (summary: SummaryData) => {
+  const params = new URLSearchParams({
+    IBAN: paymentAccount.iban,
+    AM: formatPaymentAmount(summary.amount),
+    CC: "EUR",
+    PI: `/VS${summary.variableSymbol}`,
+    CN: paymentAccount.name,
+    MSG: normalizePaymentText(`Dialnicna znamka ${summary.licensePlate}`).slice(0, 140),
+  });
+
+  return `https://payme.sk/2/m/PME?${params.toString()}`;
+};
+
 const vignetteMaxAdvanceDays: Record<string, number> = {
   "1day": 60,
   "10day": 30,
@@ -597,45 +628,62 @@ function SummaryView({
   countryName?: string;
 }) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [fallbackQrDataUrl, setFallbackQrDataUrl] = useState<string | null>(null);
+  const [paymentLink, setPaymentLink] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const payload = await encode({
-          invoiceId: summary.variableSymbol,
-          payments: [
-            {
-              type: PaymentOptions.PaymentOrder,
-              amount: Number.parseFloat(summary.amount),
-              currencyCode: CurrencyCode.EUR,
-              paymentDueDate: format(new Date(), "yyyyMMdd"),
-              variableSymbol: summary.variableSymbol,
-              constantSymbol: "0308",
-              paymentNote: `Dialnicna znamka ${summary.licensePlate}`,
-              bankAccounts: [
-                {
-                  iban: "SK7683300000002603456997",
-                  bic: "FIOZSKBAXXX",
-                },
-              ],
-              beneficiary: {
-                name: "Kozart",
-              },
-            },
-          ],
-        }, { version: Version["1.1.0"] });
-        const dataUrl = await QRCode.toDataURL(payload, {
+        setQrDataUrl(null);
+        setFallbackQrDataUrl(null);
+        setPaymentLink(null);
+        setQrError(null);
+
+        const paymeUrl = buildPaymePaymentUrl(summary);
+        const primaryDataUrl = await QRCode.toDataURL(paymeUrl, {
           errorCorrectionLevel: "M",
           margin: 4,
-          width: 320,
+          width: 360,
           color: {
             dark: "#000000",
             light: "#ffffff",
           },
         });
-        if (!cancelled) setQrDataUrl(dataUrl);
+
+        const payload = encode({
+          payments: [
+            {
+              type: PaymentOptions.PaymentOrder,
+              amount: Number.parseFloat(summary.amount),
+              currencyCode: CurrencyCode.EUR,
+              variableSymbol: summary.variableSymbol,
+              paymentNote: normalizePaymentText(`Dialnicna znamka ${summary.licensePlate}`),
+              bankAccounts: [
+                {
+                  iban: paymentAccount.iban,
+                },
+              ],
+            },
+          ],
+        } as Parameters<typeof encode>[0], { deburr: true, validate: true, version: Version["1.0.0"] });
+
+        const fallbackDataUrl = await QRCode.toDataURL(payload, {
+          errorCorrectionLevel: "M",
+          margin: 4,
+          width: 360,
+          color: {
+            dark: "#000000",
+            light: "#ffffff",
+          },
+        });
+
+        if (!cancelled) {
+          setQrDataUrl(primaryDataUrl);
+          setFallbackQrDataUrl(fallbackDataUrl);
+          setPaymentLink(paymeUrl);
+        }
       } catch (e) {
         if (!cancelled) setQrError(e instanceof Error ? e.message : "QR error");
       }
@@ -658,19 +706,32 @@ function SummaryView({
 
       <div className="flex flex-col items-center gap-2">
         {qrDataUrl ? (
-          <img src={qrDataUrl} alt="PAY by square QR kód" className="rounded-lg border border-border bg-white p-2" width={240} height={240} />
+          <img src={qrDataUrl} alt="QR kód pre bankovú platbu" className="h-auto w-[320px] max-w-full rounded-lg border border-border bg-white p-2" />
         ) : qrError ? (
           <div className="text-sm text-destructive">Nepodarilo sa vygenerovať QR kód: {qrError}</div>
         ) : (
-          <div className="h-[240px] w-[240px] animate-pulse rounded-lg bg-secondary" />
+          <div className="h-[320px] w-[320px] max-w-full animate-pulse rounded-lg bg-secondary" />
         )}
-        <p className="text-xs text-muted-foreground">PAY by square — naskenujte v mobilnom bankovníctve</p>
+        <p className="text-xs text-muted-foreground">QR platba cez payme — naskenujte v mobilnom bankovníctve</p>
+        {paymentLink && (
+          <a className="text-xs font-medium text-primary underline-offset-4 hover:underline" href={paymentLink} target="_blank" rel="noreferrer">
+            Otvoriť platobný odkaz
+          </a>
+        )}
+        {fallbackQrDataUrl && (
+          <details className="mt-2 w-full rounded-lg border border-border p-3 text-center">
+            <summary className="cursor-pointer text-sm font-medium">Alternatívny PAY by square QR</summary>
+            <div className="mt-3 flex justify-center">
+              <img src={fallbackQrDataUrl} alt="Alternatívny PAY by square QR kód" className="h-auto w-[280px] max-w-full rounded-lg border border-border bg-white p-2" />
+            </div>
+          </details>
+        )}
       </div>
 
       <div className="rounded-lg border border-border p-4 text-sm space-y-1.5">
-        <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">2603456997</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">IBAN</span><span className="font-mono">SK76 8330 0000 0026 0345 6997</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">BIC/SWIFT</span><span className="font-mono">FIOZSKBAXXX</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">{paymentAccount.accountNumber}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">IBAN</span><span className="font-mono">{paymentAccount.ibanFormatted}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">BIC/SWIFT</span><span className="font-mono">{paymentAccount.bic}</span></div>
         <div className="flex justify-between"><span className="text-muted-foreground">Variabilný symbol</span><span className="font-mono font-bold">{summary.variableSymbol}</span></div>
         <div className="flex justify-between"><span className="text-muted-foreground">Suma</span><span className="font-mono font-bold">{summary.amount} EUR</span></div>
       </div>
