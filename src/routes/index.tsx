@@ -49,18 +49,8 @@ const normalizePaymentText = (value: string) =>
 
 const formatPaymentAmount = (amount: string) => Number.parseFloat(amount).toFixed(2);
 
-const buildPaymePaymentUrl = (summary: SummaryData) => {
-  const params = new URLSearchParams({
-    IBAN: paymentAccount.iban,
-    AM: formatPaymentAmount(summary.amount),
-    CC: "EUR",
-    PI: `/VS${summary.variableSymbol}`,
-    CN: paymentAccount.name,
-    MSG: normalizePaymentText(`Dialnicna znamka ${summary.licensePlate}`).slice(0, 140),
-  });
 
-  return `https://payme.sk/2/m/PME?${params.toString()}`;
-};
+
 
 const vignetteMaxAdvanceDays: Record<string, number> = {
   "1day": 60,
