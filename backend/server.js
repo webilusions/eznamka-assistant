@@ -47,6 +47,8 @@ const createTaskSchema = z.object({
   vignetteType: z.string().min(1),
   validityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   email: z.string().email(),
+  variableSymbol: z.string().min(1).optional(),
+  amount: z.string().optional(),
 });
 
 // POST /api/tasks
@@ -61,7 +63,9 @@ app.post("/api/tasks", async (req, res) => {
         vignette_type: data.vignetteType,
         validity_date: data.validityDate,
         email: data.email,
-        status: "pending",
+        variable_symbol: data.variableSymbol || null,
+        payment_amount: data.amount || null,
+        status: data.variableSymbol ? "unpaid" : "pending",
       })
       .select()
       .single();
@@ -71,6 +75,7 @@ app.post("/api/tasks", async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
+
 
 // GET /api/tasks
 app.get("/api/tasks", async (_, res) => {
