@@ -47,20 +47,10 @@ const normalizePaymentText = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const formatPaymentAmount = (amount: string) => Number.parseFloat(amount).toFixed(2);
 
-const buildPaymePaymentUrl = (summary: SummaryData) => {
-  const params = new URLSearchParams({
-    IBAN: paymentAccount.iban,
-    AM: formatPaymentAmount(summary.amount),
-    CC: "EUR",
-    PI: `/VS${summary.variableSymbol}`,
-    CN: paymentAccount.name,
-    MSG: normalizePaymentText(`Dialnicna znamka ${summary.licensePlate}`).slice(0, 140),
-  });
 
-  return `https://payme.sk/2/m/PME?${params.toString()}`;
-};
+
+
 
 const vignetteMaxAdvanceDays: Record<string, number> = {
   "1day": 60,
@@ -628,8 +618,6 @@ function SummaryView({
   countryName?: string;
 }) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [fallbackQrDataUrl, setFallbackQrDataUrl] = useState<string | null>(null);
-  const [paymentLink, setPaymentLink] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -637,20 +625,7 @@ function SummaryView({
     (async () => {
       try {
         setQrDataUrl(null);
-        setFallbackQrDataUrl(null);
-        setPaymentLink(null);
         setQrError(null);
-
-        const paymeUrl = buildPaymePaymentUrl(summary);
-        const primaryDataUrl = await QRCode.toDataURL(paymeUrl, {
-          errorCorrectionLevel: "M",
-          margin: 4,
-          width: 360,
-          color: {
-            dark: "#000000",
-            light: "#ffffff",
-          },
-        });
 
         const payload = encode({
           payments: [
@@ -669,7 +644,7 @@ function SummaryView({
           ],
         } as Parameters<typeof encode>[0], { deburr: true, validate: true, version: Version["1.0.0"] });
 
-        const fallbackDataUrl = await QRCode.toDataURL(payload, {
+        const dataUrl = await QRCode.toDataURL(payload, {
           errorCorrectionLevel: "M",
           margin: 4,
           width: 360,
@@ -679,11 +654,7 @@ function SummaryView({
           },
         });
 
-        if (!cancelled) {
-          setQrDataUrl(primaryDataUrl);
-          setFallbackQrDataUrl(fallbackDataUrl);
-          setPaymentLink(paymeUrl);
-        }
+        if (!cancelled) setQrDataUrl(dataUrl);
       } catch (e) {
         if (!cancelled) setQrError(e instanceof Error ? e.message : "QR error");
       }
@@ -706,27 +677,15 @@ function SummaryView({
 
       <div className="flex flex-col items-center gap-2">
         {qrDataUrl ? (
-          <img src={qrDataUrl} alt="QR kód pre bankovú platbu" className="h-auto w-[320px] max-w-full rounded-lg border border-border bg-white p-2" />
+          <img src={qrDataUrl} alt="PAY by square QR kód" className="h-auto w-[320px] max-w-full rounded-lg border border-border bg-white p-2" />
         ) : qrError ? (
           <div className="text-sm text-destructive">Nepodarilo sa vygenerovať QR kód: {qrError}</div>
         ) : (
           <div className="h-[320px] w-[320px] max-w-full animate-pulse rounded-lg bg-secondary" />
         )}
-        <p className="text-xs text-muted-foreground">QR platba cez payme — naskenujte v mobilnom bankovníctve</p>
-        {paymentLink && (
-          <a className="text-xs font-medium text-primary underline-offset-4 hover:underline" href={paymentLink} target="_blank" rel="noreferrer">
-            Otvoriť platobný odkaz
-          </a>
-        )}
-        {fallbackQrDataUrl && (
-          <details className="mt-2 w-full rounded-lg border border-border p-3 text-center">
-            <summary className="cursor-pointer text-sm font-medium">Alternatívny PAY by square QR</summary>
-            <div className="mt-3 flex justify-center">
-              <img src={fallbackQrDataUrl} alt="Alternatívny PAY by square QR kód" className="h-auto w-[280px] max-w-full rounded-lg border border-border bg-white p-2" />
-            </div>
-          </details>
-        )}
+        <p className="text-xs text-muted-foreground">PAY by square — naskenujte v mobilnom bankovníctve</p>
       </div>
+
 
       <div className="rounded-lg border border-border p-4 text-sm space-y-1.5">
         <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">{paymentAccount.accountNumber}</span></div>
