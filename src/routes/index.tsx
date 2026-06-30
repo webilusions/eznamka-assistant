@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
-import { Version } from "bysquare";
-import { encode, PaymentOptions, CurrencyCode } from "bysquare/pay";
-import QRCode from "qrcode";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,21 +28,6 @@ import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
-const paymentAccount = {
-  accountNumber: "2603456997",
-  iban: "SK7683300000002603456997",
-  ibanFormatted: "SK76 8330 0000 0026 0345 6997",
-  bic: "FIOZSKBAXXX",
-  name: "Kozart",
-};
-
-const normalizePaymentText = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^A-Za-z0-9 /\-?:().,'+]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 
 
 
@@ -196,15 +178,6 @@ function VehicleFormPage() {
 
 
 
-  const [summary, setSummary] = useState<null | {
-    licensePlate: string;
-    countryCode: string;
-    vignetteType: string;
-    validityDate: Date;
-    email: string;
-    variableSymbol: string;
-    amount: string;
-  }>(null);
 
   const mutation = useMutation({
     mutationFn: (variables: { data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string } }) =>
@@ -222,16 +195,19 @@ function VehicleFormPage() {
       "1day": "8.10",
     };
     const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    setSummary({
+    const payload = {
       licensePlate: values.licensePlate.toUpperCase().trim(),
       countryCode: values.countryCode,
       vignetteType: values.vignetteType,
-      validityDate: values.validityDate,
+      validityDate: values.validityDate.toISOString(),
       email: values.email.trim(),
       variableSymbol: vs,
       amount: priceMap[values.vignetteType] ?? "0.00",
-    });
+    };
+    sessionStorage.setItem("eznamka-summary", JSON.stringify(payload));
+    navigate({ to: "/platba" });
   };
+
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background selection:bg-primary/30">
@@ -573,127 +549,7 @@ function VehicleFormPage() {
       </Card>
       </div>
 
-      <Dialog open={!!summary} onOpenChange={(o) => !o && setSummary(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Sumár objednávky</DialogTitle>
-            <DialogDescription>
-              Zaplaťte naskenovaním QR kódu vo vašej bankovej aplikácii.
-            </DialogDescription>
-          </DialogHeader>
-          {summary && (() => {
-            const vt = vignetteTypes.find((v) => v.value === summary.vignetteType);
-            const country = countries.find((c) => c.code === summary.countryCode);
-            return (
-              <SummaryView
-                summary={summary}
-                vignetteTitle={vt?.title}
-                countryName={country?.name}
-              />
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
 
-type SummaryData = {
-  licensePlate: string;
-  countryCode: string;
-  vignetteType: string;
-  validityDate: Date;
-  email: string;
-  variableSymbol: string;
-  amount: string;
-};
-
-function SummaryView({
-  summary,
-  vignetteTitle,
-  countryName,
-}: {
-  summary: SummaryData;
-  vignetteTitle?: string;
-  countryName?: string;
-}) {
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [qrError, setQrError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setQrDataUrl(null);
-        setQrError(null);
-
-        const payload = encode({
-          payments: [
-            {
-              type: PaymentOptions.PaymentOrder,
-              amount: Number.parseFloat(summary.amount),
-              currencyCode: CurrencyCode.EUR,
-              variableSymbol: summary.variableSymbol,
-              paymentNote: normalizePaymentText(`Dialnicna znamka ${summary.licensePlate}`),
-              bankAccounts: [
-                {
-                  iban: paymentAccount.iban,
-                },
-              ],
-            },
-          ],
-        } as Parameters<typeof encode>[0], { deburr: true, validate: true, version: Version["1.0.0"] });
-
-        const dataUrl = await QRCode.toDataURL(payload, {
-          errorCorrectionLevel: "M",
-          margin: 4,
-          width: 360,
-          color: {
-            dark: "#000000",
-            light: "#ffffff",
-          },
-        });
-
-        if (!cancelled) setQrDataUrl(dataUrl);
-      } catch (e) {
-        if (!cancelled) setQrError(e instanceof Error ? e.message : "QR error");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [summary]);
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-secondary/40 p-4 text-sm space-y-1.5">
-        <div className="flex justify-between"><span className="text-muted-foreground">EČV</span><span className="font-medium">{summary.licensePlate}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Krajina</span><span className="font-medium">{countryName}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Typ známky</span><span className="font-medium">{vignetteTitle}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Platná od</span><span className="font-medium">{format(summary.validityDate, "dd.MM.yyyy", { locale: sk })}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="font-medium">{summary.email}</span></div>
-        <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-muted-foreground">Suma</span><span className="font-bold text-primary">{summary.amount} EUR</span></div>
-      </div>
-
-      <div className="flex flex-col items-center gap-2">
-        {qrDataUrl ? (
-          <img src={qrDataUrl} alt="PAY by square QR kód" className="h-auto w-[320px] max-w-full rounded-lg border border-border bg-white p-2" />
-        ) : qrError ? (
-          <div className="text-sm text-destructive">Nepodarilo sa vygenerovať QR kód: {qrError}</div>
-        ) : (
-          <div className="h-[320px] w-[320px] max-w-full animate-pulse rounded-lg bg-secondary" />
-        )}
-        <p className="text-xs text-muted-foreground">PAY by square — naskenujte v mobilnom bankovníctve</p>
-      </div>
-
-
-      <div className="rounded-lg border border-border p-4 text-sm space-y-1.5">
-        <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">{paymentAccount.accountNumber}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">IBAN</span><span className="font-mono">{paymentAccount.ibanFormatted}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">BIC/SWIFT</span><span className="font-mono">{paymentAccount.bic}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Variabilný symbol</span><span className="font-mono font-bold">{summary.variableSymbol}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Suma</span><span className="font-mono font-bold">{summary.amount} EUR</span></div>
-      </div>
-    </div>
-  );
-}
