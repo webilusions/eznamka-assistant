@@ -196,15 +196,6 @@ function VehicleFormPage() {
 
 
 
-  const [summary, setSummary] = useState<null | {
-    licensePlate: string;
-    countryCode: string;
-    vignetteType: string;
-    validityDate: Date;
-    email: string;
-    variableSymbol: string;
-    amount: string;
-  }>(null);
 
   const mutation = useMutation({
     mutationFn: (variables: { data: { licensePlate: string; countryCode: string; vignetteType: string; validityDate: string; email: string } }) =>
