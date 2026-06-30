@@ -31,12 +31,15 @@ import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning"; icon: React.ReactNode }> = {
   pending: { label: "Čaká sa", variant: "secondary", icon: <Clock className="h-3.5 w-3.5" /> },
+  unpaid: { label: "Nezaplatená", variant: "warning", icon: <Clock className="h-3.5 w-3.5" /> },
+  paid: { label: "Zaplatená", variant: "default", icon: <CheckCircle className="h-3.5 w-3.5" /> },
   running: { label: "Prebieha", variant: "default", icon: <Loader2 className="h-3.5 w-3.5 animate-spin" /> },
   paused_before_payment: { label: "Pred platbou", variant: "warning", icon: <PauseCircle className="h-3.5 w-3.5" /> },
   completed: { label: "Dokončené", variant: "default", icon: <CheckCircle className="h-3.5 w-3.5" /> },
   failed: { label: "Chyba", variant: "destructive", icon: <AlertCircle className="h-3.5 w-3.5" /> },
   cancelled: { label: "Zrušené", variant: "outline", icon: <XCircle className="h-3.5 w-3.5" /> },
 };
+
 
 const vignetteLabels: Record<string, string> = {
   "1year": "Ročná",
