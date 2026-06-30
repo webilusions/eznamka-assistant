@@ -47,7 +47,7 @@ const normalizePaymentText = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const formatPaymentAmount = (amount: string) => Number.parseFloat(amount).toFixed(2);
+
 
 
 
