@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrihlasenieRouteImport } from './routes/prihlasenie'
+import { Route as PlatbaRouteImport } from './routes/platba'
 import { Route as FioRouteImport } from './routes/fio'
 import { Route as CheckRouteImport } from './routes/check'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,6 +20,11 @@ import { Route as TasksTaskIdRouteImport } from './routes/tasks.$taskId'
 const PrihlasenieRoute = PrihlasenieRouteImport.update({
   id: '/prihlasenie',
   path: '/prihlasenie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatbaRoute = PlatbaRouteImport.update({
+  id: '/platba',
+  path: '/platba',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FioRoute = FioRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/check': typeof CheckRoute
   '/fio': typeof FioRoute
+  '/platba': typeof PlatbaRoute
   '/prihlasenie': typeof PrihlasenieRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/': typeof TasksIndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/check': typeof CheckRoute
   '/fio': typeof FioRoute
+  '/platba': typeof PlatbaRoute
   '/prihlasenie': typeof PrihlasenieRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks': typeof TasksIndexRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/check': typeof CheckRoute
   '/fio': typeof FioRoute
+  '/platba': typeof PlatbaRoute
   '/prihlasenie': typeof PrihlasenieRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/': typeof TasksIndexRoute
@@ -78,16 +87,25 @@ export interface FileRouteTypes {
     | '/'
     | '/check'
     | '/fio'
+    | '/platba'
     | '/prihlasenie'
     | '/tasks/$taskId'
     | '/tasks/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/check' | '/fio' | '/prihlasenie' | '/tasks/$taskId' | '/tasks'
+  to:
+    | '/'
+    | '/check'
+    | '/fio'
+    | '/platba'
+    | '/prihlasenie'
+    | '/tasks/$taskId'
+    | '/tasks'
   id:
     | '__root__'
     | '/'
     | '/check'
     | '/fio'
+    | '/platba'
     | '/prihlasenie'
     | '/tasks/$taskId'
     | '/tasks/'
@@ -97,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CheckRoute: typeof CheckRoute
   FioRoute: typeof FioRoute
+  PlatbaRoute: typeof PlatbaRoute
   PrihlasenieRoute: typeof PrihlasenieRoute
   TasksTaskIdRoute: typeof TasksTaskIdRoute
   TasksIndexRoute: typeof TasksIndexRoute
@@ -109,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/prihlasenie'
       fullPath: '/prihlasenie'
       preLoaderRoute: typeof PrihlasenieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platba': {
+      id: '/platba'
+      path: '/platba'
+      fullPath: '/platba'
+      preLoaderRoute: typeof PlatbaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fio': {
@@ -153,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckRoute: CheckRoute,
   FioRoute: FioRoute,
+  PlatbaRoute: PlatbaRoute,
   PrihlasenieRoute: PrihlasenieRoute,
   TasksTaskIdRoute: TasksTaskIdRoute,
   TasksIndexRoute: TasksIndexRoute,

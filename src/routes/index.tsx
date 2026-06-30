@@ -222,16 +222,19 @@ function VehicleFormPage() {
       "1day": "8.10",
     };
     const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    setSummary({
+    const payload = {
       licensePlate: values.licensePlate.toUpperCase().trim(),
       countryCode: values.countryCode,
       vignetteType: values.vignetteType,
-      validityDate: values.validityDate,
+      validityDate: values.validityDate.toISOString(),
       email: values.email.trim(),
       variableSymbol: vs,
       amount: priceMap[values.vignetteType] ?? "0.00",
-    });
+    };
+    sessionStorage.setItem("eznamka-summary", JSON.stringify(payload));
+    navigate({ to: "/platba" });
   };
+
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background selection:bg-primary/30">
