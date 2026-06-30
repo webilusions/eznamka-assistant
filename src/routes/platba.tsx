@@ -1,13 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Version } from "bysquare";
 import { encode, PaymentOptions, CurrencyCode } from "bysquare/pay";
 import QRCode from "qrcode";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Copy,
+  Mail,
+  CalendarDays,
+  Car,
+  MapPin,
+  Ticket,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 const paymentAccount = {
   accountNumber: "2603456997",
@@ -63,6 +76,29 @@ export const Route = createFileRoute("/platba")({
   component: PaymentPage,
 });
 
+function CopyButton({ value, label }: { value: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1600);
+        } catch {
+          /* ignore */
+        }
+      }}
+      className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/60 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+      aria-label={label ?? "Kopírovať"}
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Skopírované" : "Kopírovať"}
+    </button>
+  );
+}
+
 function PaymentPage() {
   const navigate = useNavigate();
   const [summary, setSummary] = useState<StoredSummary | null>(null);
@@ -90,24 +126,27 @@ function PaymentPage() {
         setQrDataUrl(null);
         setQrError(null);
 
-        const payload = encode({
-          payments: [
-            {
-              type: PaymentOptions.PaymentOrder,
-              amount: Number.parseFloat(summary.amount),
-              currencyCode: CurrencyCode.EUR,
-              variableSymbol: summary.variableSymbol,
-              paymentNote: normalizePaymentText(`Dialnicna znamka ${summary.licensePlate}`),
-              bankAccounts: [{ iban: paymentAccount.iban }],
-            },
-          ],
-        } as Parameters<typeof encode>[0], { deburr: true, validate: true, version: Version["1.0.0"] });
+        const payload = encode(
+          {
+            payments: [
+              {
+                type: PaymentOptions.PaymentOrder,
+                amount: Number.parseFloat(summary.amount),
+                currencyCode: CurrencyCode.EUR,
+                variableSymbol: summary.variableSymbol,
+                paymentNote: normalizePaymentText(`Dialnicna znamka ${summary.licensePlate}`),
+                bankAccounts: [{ iban: paymentAccount.iban }],
+              },
+            ],
+          } as Parameters<typeof encode>[0],
+          { deburr: true, validate: true, version: Version["1.0.0"] },
+        );
 
         const dataUrl = await QRCode.toDataURL(payload, {
           errorCorrectionLevel: "M",
-          margin: 4,
-          width: 360,
-          color: { dark: "#000000", light: "#ffffff" },
+          margin: 2,
+          width: 420,
+          color: { dark: "#0b1220", light: "#ffffff" },
         });
 
         if (!cancelled) setQrDataUrl(dataUrl);
@@ -120,7 +159,12 @@ function PaymentPage() {
     };
   }, [summary]);
 
-  if (!summary) {
+  const validityDate = useMemo(
+    () => (summary ? new Date(summary.validityDate) : null),
+    [summary],
+  );
+
+  if (!summary || !validityDate) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center text-muted-foreground">
         Načítavam…
@@ -128,57 +172,185 @@ function PaymentPage() {
     );
   }
 
-  const validityDate = new Date(summary.validityDate);
+  const detailRows: Array<{ icon: typeof Car; label: string; value: string }> = [
+    { icon: Car, label: "EČV", value: summary.licensePlate },
+    { icon: MapPin, label: "Krajina", value: countryNames[summary.countryCode] ?? summary.countryCode },
+    { icon: Ticket, label: "Typ známky", value: vignetteTitles[summary.vignetteType] ?? summary.vignetteType },
+    { icon: CalendarDays, label: "Platná od", value: format(validityDate, "dd.MM.yyyy", { locale: sk }) },
+    { icon: Mail, label: "Email", value: summary.email },
+  ];
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      <div className="relative z-10 mx-auto w-full max-w-2xl px-4 py-12 sm:py-16">
-        <div className="mb-6">
-          <Button variant="ghost" asChild size="sm">
+      {/* Decorative background */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[520px]"
+        style={{ background: "var(--gradient-hero)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
+        style={{ background: "var(--gradient-primary)" }}
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-5xl px-4 py-10 sm:py-14">
+        {/* Top bar */}
+        <div className="mb-8 flex items-center justify-between">
+          <Button variant="ghost" asChild size="sm" className="text-muted-foreground hover:text-foreground">
             <Link to="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Späť na formulár
             </Link>
           </Button>
+          <Badge variant="outline" className="gap-1.5 border-success/30 bg-success/10 text-success">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Bezpečná platba
+          </Badge>
         </div>
 
-        <Card className="rounded-3xl border-border/60 bg-card shadow-xl">
-          <CardHeader>
-            <CardTitle className="font-display text-2xl">Sumár objednávky</CardTitle>
-            <CardDescription>
-              Zaplaťte naskenovaním QR kódu vo vašej bankovej aplikácii.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border border-border bg-secondary/40 p-4 text-sm space-y-1.5">
-              <div className="flex justify-between"><span className="text-muted-foreground">EČV</span><span className="font-medium">{summary.licensePlate}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Krajina</span><span className="font-medium">{countryNames[summary.countryCode] ?? summary.countryCode}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Typ známky</span><span className="font-medium">{vignetteTitles[summary.vignetteType] ?? summary.vignetteType}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Platná od</span><span className="font-medium">{format(validityDate, "dd.MM.yyyy", { locale: sk })}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span className="font-medium">{summary.email}</span></div>
-              <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="text-muted-foreground">Suma</span><span className="font-bold text-primary">{summary.amount} EUR</span></div>
-            </div>
+        {/* Heading */}
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Krok 2 z 2
+          </p>
+          <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+            Sumár objednávky
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+            Skontrolujte údaje a zaplaťte naskenovaním QR kódu v mobilnej bankovej aplikácii.
+          </p>
+        </div>
 
-            <div className="flex flex-col items-center gap-2">
-              {qrDataUrl ? (
-                <img src={qrDataUrl} alt="PAY by square QR kód" className="h-auto w-[320px] max-w-full rounded-lg border border-border bg-white p-2" />
-              ) : qrError ? (
-                <div className="text-sm text-destructive">Nepodarilo sa vygenerovať QR kód: {qrError}</div>
-              ) : (
-                <div className="h-[320px] w-[320px] max-w-full animate-pulse rounded-lg bg-secondary" />
-              )}
-              <p className="text-xs text-muted-foreground">PAY by square — naskenujte v mobilnom bankovníctve</p>
-            </div>
+        <div className="grid gap-6 lg:grid-cols-5">
+          {/* Order summary */}
+          <Card className="rounded-3xl border-border/60 bg-card/80 shadow-[var(--shadow-elegant)] backdrop-blur lg:col-span-3">
+            <CardContent className="p-6 sm:p-8">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="font-display text-lg font-semibold">Detail objednávky</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Variabilný symbol{" "}
+                    <span className="font-mono font-semibold text-foreground">
+                      {summary.variableSymbol}
+                    </span>
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-2 text-right">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-primary/80">
+                    K úhrade
+                  </div>
+                  <div className="font-display text-2xl font-bold text-primary">
+                    {summary.amount} €
+                  </div>
+                </div>
+              </div>
 
-            <div className="rounded-lg border border-border p-4 text-sm space-y-1.5">
-              <div className="flex justify-between"><span className="text-muted-foreground">Číslo účtu</span><span className="font-mono">{paymentAccount.accountNumber}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">IBAN</span><span className="font-mono">{paymentAccount.ibanFormatted}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">BIC/SWIFT</span><span className="font-mono">{paymentAccount.bic}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Variabilný symbol</span><span className="font-mono font-bold">{summary.variableSymbol}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Suma</span><span className="font-mono font-bold">{summary.amount} EUR</span></div>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/40">
+                {detailRows.map(({ icon: Icon, label, value }) => (
+                  <div key={label} className="flex items-center gap-4 px-4 py-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        {label}
+                      </div>
+                      <div className="truncate text-sm font-semibold text-foreground">
+                        {value}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Separator className="my-6" />
+
+              <h3 className="mb-3 text-sm font-semibold text-foreground">Platobné údaje</h3>
+              <dl className="space-y-2.5 text-sm">
+                {[
+                  { k: "Príjemca", v: paymentAccount.name, mono: false },
+                  { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
+                  { k: "BIC / SWIFT", v: paymentAccount.bic, mono: true },
+                  { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
+                  { k: "Suma", v: `${summary.amount} EUR`, mono: true },
+                ].map((row) => (
+                  <div
+                    key={row.k}
+                    className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
+                  >
+                    <dt className="text-muted-foreground">{row.k}</dt>
+                    <dd className="flex items-center gap-2">
+                      <span className={row.mono ? "font-mono font-medium" : "font-medium"}>
+                        {row.v}
+                      </span>
+                      {"copy" in row || row.mono ? (
+                        <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
+                      ) : null}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+
+          {/* QR code */}
+          <Card className="rounded-3xl border-border/60 bg-card/80 shadow-[var(--shadow-elegant)] backdrop-blur lg:col-span-2">
+            <CardContent className="flex h-full flex-col items-center p-6 text-center sm:p-8">
+              <Badge variant="secondary" className="mb-4 gap-1.5">
+                <Smartphone className="h-3.5 w-3.5" />
+                PAY by square
+              </Badge>
+              <h2 className="font-display text-lg font-semibold">Zaplatiť QR kódom</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Otvorte bankovú aplikáciu a naskenujte kód.
+              </p>
+
+              <div className="relative my-6 flex items-center justify-center">
+                <div
+                  aria-hidden
+                  className="absolute -inset-3 rounded-3xl opacity-60 blur-2xl"
+                  style={{ background: "var(--gradient-primary)" }}
+                />
+                <div className="relative rounded-2xl border border-border/60 bg-white p-3 shadow-lg">
+                  {qrDataUrl ? (
+                    <img
+                      src={qrDataUrl}
+                      alt="PAY by square QR kód"
+                      className="block h-[280px] w-[280px] max-w-full"
+                    />
+                  ) : qrError ? (
+                    <div className="flex h-[280px] w-[280px] items-center justify-center px-4 text-sm text-destructive">
+                      {qrError}
+                    </div>
+                  ) : (
+                    <div className="h-[280px] w-[280px] animate-pulse rounded-lg bg-secondary" />
+                  )}
+                </div>
+              </div>
+
+              <ol className="mt-auto w-full space-y-2 text-left text-xs text-muted-foreground">
+                {[
+                  "Otvorte mobilnú bankovú aplikáciu",
+                  "Zvoľte „Platba QR kódom\"",
+                  "Naskenujte a potvrďte platbu",
+                ].map((step, i) => (
+                  <li key={step} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                      {i + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+        </div>
+
+        <p className="mt-8 text-center text-xs text-muted-foreground">
+          Po pripísaní platby vám pošleme potvrdenie na{" "}
+          <span className="font-medium text-foreground">{summary.email}</span>.
+        </p>
       </div>
     </div>
   );
