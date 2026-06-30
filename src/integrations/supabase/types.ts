@@ -105,6 +105,7 @@ export type Database = {
           updated_at: string
           user_id: string | null
           validity_date: string
+          variable_symbol: string | null
           vignette_type: string
         }
         Insert: {
@@ -124,6 +125,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           validity_date: string
+          variable_symbol?: string | null
           vignette_type: string
         }
         Update: {
@@ -143,6 +145,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           validity_date?: string
+          variable_symbol?: string | null
           vignette_type?: string
         }
         Relationships: []
@@ -162,6 +165,8 @@ export type Database = {
         | "completed"
         | "failed"
         | "cancelled"
+        | "unpaid"
+        | "paid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -296,6 +301,8 @@ export const Constants = {
         "completed",
         "failed",
         "cancelled",
+        "unpaid",
+        "paid",
       ],
     },
   },

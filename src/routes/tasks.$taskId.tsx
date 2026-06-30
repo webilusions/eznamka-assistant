@@ -41,6 +41,8 @@ import { useNavigate } from "@tanstack/react-router";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning"; icon: React.ReactNode; description: string }> = {
   pending: { label: "Čaká sa", variant: "secondary", icon: <Clock className="h-5 w-5" />, description: "Úloha čaká na spustenie automatizácie" },
+  unpaid: { label: "Nezaplatená", variant: "warning", icon: <Clock className="h-5 w-5" />, description: "Čaká sa na pripísanie platby na účet. Po identifikácii VS sa automatizácia spustí sama." },
+  paid: { label: "Zaplatená", variant: "default", icon: <CheckCircle className="h-5 w-5" />, description: "Platba bola identifikovaná, spúšťam automatizáciu nákupu." },
   running: { label: "Prebieha", variant: "default", icon: <Loader2 className="h-5 w-5 animate-spin" />, description: "Playwright automatizuje kroky na eznamka.sk" },
   paused_before_payment: { label: "Pred platbou", variant: "warning", icon: <PauseCircle className="h-5 w-5" />, description: "Automatizácia sa zastavila pred platbou. Skontrolujte údaje a pokračujte ručne." },
   completed: { label: "Dokončené", variant: "default", icon: <CheckCircle className="h-5 w-5" />, description: "Úloha bola úspešne dokončená" },

@@ -195,18 +195,35 @@ function VehicleFormPage() {
       "1day": "8.10",
     };
     const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    const amount = priceMap[values.vignetteType] ?? "0.00";
     const payload = {
       licensePlate: values.licensePlate.toUpperCase().trim(),
       countryCode: values.countryCode,
       vignetteType: values.vignetteType,
-      validityDate: values.validityDate.toISOString(),
+      validityDate: values.validityDate.toISOString().slice(0, 10),
       email: values.email.trim(),
       variableSymbol: vs,
-      amount: priceMap[values.vignetteType] ?? "0.00",
+      amount,
     };
-    sessionStorage.setItem("eznamka-summary", JSON.stringify(payload));
+
+    try {
+      if (isExternalApiEnabled()) {
+        await externalTasksApi.createTask(payload as any);
+      } else {
+        await createTaskFn({ data: payload as any });
+      }
+    } catch (e) {
+      console.error("createTask failed:", e);
+      // pokračujeme aj tak — používateľ uvidí QR kód
+    }
+
+    sessionStorage.setItem(
+      "eznamka-summary",
+      JSON.stringify({ ...payload, validityDate: values.validityDate.toISOString() }),
+    );
     navigate({ to: "/platba" });
   };
+
 
 
   return (
