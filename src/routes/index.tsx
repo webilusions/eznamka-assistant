@@ -28,21 +28,6 @@ import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
 
-const paymentAccount = {
-  accountNumber: "2603456997",
-  iban: "SK7683300000002603456997",
-  ibanFormatted: "SK76 8330 0000 0026 0345 6997",
-  bic: "FIOZSKBAXXX",
-  name: "Kozart",
-};
-
-const normalizePaymentText = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^A-Za-z0-9 /\-?:().,'+]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 
 
 
