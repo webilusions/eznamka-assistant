@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/tasks.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,11 +39,22 @@ export const Route = createFileRoute("/fio")({
 });
 
 function FioPage() {
-  const { data, isLoading, error } = useQuery<FioData>({
+  const { data, isLoading, error, dataUpdatedAt } = useQuery<FioData>({
     queryKey: ["fio-account"],
     queryFn: () => apiFetch<FioData>("/fio/account?days=89"),
     refetchInterval: 30_000,
   });
+
+  const [countdown, setCountdown] = useState(30);
+  useEffect(() => {
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - dataUpdatedAt) / 1000);
+      setCountdown(Math.max(0, 30 - elapsed));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [dataUpdatedAt]);
 
   const fmtAmount = (n?: number, c?: string) =>
     typeof n === "number"
@@ -57,7 +69,7 @@ function FioPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Fio banka — účet</h1>
-          <p className="text-sm text-muted-foreground">Posledných 89 dní</p>
+          <p className="text-sm text-muted-foreground">Posledných 89 dní · obnova za {countdown}s</p>
         </div>
       </div>
 
