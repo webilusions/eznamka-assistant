@@ -276,68 +276,69 @@ function PaymentPage() {
 
             <Separator className="my-6" />
 
-            {/* QR kód */}
-            <div className="flex flex-col items-center text-center">
-              <Badge variant="secondary" className="mb-3 gap-1.5">
-                <Smartphone className="h-3.5 w-3.5" />
-                PAY by square
-              </Badge>
-              <h2 className="font-display text-lg font-semibold">Zaplatiť QR kódom</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Otvorte bankovú aplikáciu a naskenujte kód.
-              </p>
+            {/* QR kód + Platobné údaje vedľa seba */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* QR kód */}
+              <div className="flex flex-col items-center text-center">
+                <Badge variant="secondary" className="mb-3 gap-1.5">
+                  <Smartphone className="h-3.5 w-3.5" />
+                  PAY by square
+                </Badge>
+                <h2 className="font-display text-lg font-semibold">Zaplatiť QR kódom</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Otvorte bankovú aplikáciu a naskenujte kód.
+                </p>
 
-              <div className="relative my-6 flex items-center justify-center">
-                <div
-                  aria-hidden
-                  className="absolute -inset-3 rounded-3xl opacity-60 blur-2xl"
-                  style={{ background: "var(--gradient-primary)" }}
-                />
-                <div className="relative rounded-2xl border border-border/60 bg-white p-3 shadow-lg">
-                  {qrDataUrl ? (
-                    <img
-                      src={qrDataUrl}
-                      alt="PAY by square QR kód"
-                      className="block h-[260px] w-[260px] max-w-full"
-                    />
-                  ) : qrError ? (
-                    <div className="flex h-[260px] w-[260px] items-center justify-center px-4 text-sm text-destructive">
-                      {qrError}
-                    </div>
-                  ) : (
-                    <div className="h-[260px] w-[260px] animate-pulse rounded-lg bg-secondary" />
-                  )}
+                <div className="relative my-6 flex items-center justify-center">
+                  <div
+                    aria-hidden
+                    className="absolute -inset-3 rounded-3xl opacity-60 blur-2xl"
+                    style={{ background: "var(--gradient-primary)" }}
+                  />
+                  <div className="relative rounded-2xl border border-border/60 bg-white p-3 shadow-lg">
+                    {qrDataUrl ? (
+                      <img
+                        src={qrDataUrl}
+                        alt="PAY by square QR kód"
+                        className="block h-[240px] w-[240px] max-w-full"
+                      />
+                    ) : qrError ? (
+                      <div className="flex h-[240px] w-[240px] items-center justify-center px-4 text-sm text-destructive">
+                        {qrError}
+                      </div>
+                    ) : (
+                      <div className="h-[240px] w-[240px] animate-pulse rounded-lg bg-secondary" />
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <Separator className="my-2" />
-
-            {/* Platobné údaje */}
-            <h3 className="mb-3 mt-6 text-sm font-semibold text-foreground">Platobné údaje</h3>
-            <dl className="space-y-2.5 text-sm">
-              {[
-                { k: "Príjemca", v: paymentAccount.name, mono: false },
-                { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
-                { k: "BIC / SWIFT", v: paymentAccount.bic, mono: true },
-                { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
-                { k: "Suma", v: `${summary.amount} EUR`, mono: true },
-              ].map((row) => (
-                <div
-                  key={row.k}
-                  className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
-                >
-                  <dt className="text-muted-foreground">{row.k}</dt>
-                  <dd className="flex items-center gap-2">
-                    <span className={row.mono ? "font-mono font-medium" : "font-medium"}>
-                      {row.v}
-                    </span>
-                    {"copy" in row || row.mono ? (
-                      <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
-                    ) : null}
-                  </dd>
-                </div>
-              ))}
+              {/* Platobné údaje */}
+              <div>
+                <h3 className="mb-3 text-sm font-semibold text-foreground">Platobné údaje</h3>
+                <dl className="space-y-2.5 text-sm">
+                  {[
+                    { k: "Príjemca", v: paymentAccount.name, mono: false },
+                    { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
+                    { k: "BIC / SWIFT", v: paymentAccount.bic, mono: true },
+                    { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
+                    { k: "Suma", v: `${summary.amount} EUR`, mono: true },
+                  ].map((row) => (
+                    <div
+                      key={row.k}
+                      className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
+                    >
+                      <dt className="text-muted-foreground">{row.k}</dt>
+                      <dd className="flex items-center gap-2">
+                        <span className={row.mono ? "font-mono font-medium" : "font-medium"}>
+                          {row.v}
+                        </span>
+                        {"copy" in row || row.mono ? (
+                          <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
+                        ) : null}
+                      </dd>
+                    </div>
+                  ))}
             </dl>
           </CardContent>
         </Card>
