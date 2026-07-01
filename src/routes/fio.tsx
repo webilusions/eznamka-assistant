@@ -113,7 +113,7 @@ function FioPage() {
                 {data.transactions.length === 0 && (
                   <p className="py-6 text-center text-sm text-muted-foreground">Žiadne transakcie</p>
                 )}
-                {data.transactions.map((t, i) => {
+                {[...data.transactions].reverse().map((t, i) => {
                   const positive = (t.amount || 0) >= 0;
                   return (
                     <div key={t.id || i} className="flex items-start gap-3 py-3">
