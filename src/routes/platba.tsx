@@ -339,7 +339,9 @@ function PaymentPage() {
                       </dd>
                     </div>
                   ))}
-            </dl>
+                </dl>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
