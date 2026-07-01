@@ -193,14 +193,9 @@ function VehicleFormPage() {
   });
 
   const onSubmit = async (values: FormValues) => {
-    const priceMap: Record<string, string> = {
-      "1year": "90.00",
-      "1month": "17.10",
-      "10day": "10.80",
-      "1day": "8.10",
-    };
+    const prices = loadPrices();
     const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    const amount = priceMap[values.vignetteType] ?? "0.00";
+    const amount = (prices[values.vignetteType as VignetteKey] ?? 0).toFixed(2);
     const payload = {
       licensePlate: values.licensePlate.toUpperCase().trim(),
       countryCode: values.countryCode,
