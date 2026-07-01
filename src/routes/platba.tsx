@@ -284,11 +284,8 @@ function PaymentPage() {
                   <Smartphone className="h-3.5 w-3.5" />
                   Zaplatiť QR kódom
                 </Badge>
+                <div className="relative mb-6 flex items-center justify-center">
 
-
-
-
-                <div className="relative my-6 flex items-center justify-center">
                   <div
                     aria-hidden
                     className="absolute -inset-3 rounded-3xl opacity-60 blur-2xl"
