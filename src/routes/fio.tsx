@@ -135,7 +135,7 @@ function FioPage() {
                           </p>
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                          {t.date && <span>{(() => { const m = t.date.match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[3]}.${+m[2]}.${m[1]}` : t.date; })()}</span>}
+                          {t.date && <span>{(() => { const m = t.date.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/); if (!m) return t.date; const base = `${+m[3]}.${+m[2]}.${m[1]}`; return m[4] ? `${base} ${m[4]}:${m[5]}` : base; })()}</span>}
                           {t.counterAccount && (
                             <span className="font-mono">
                               {t.counterAccount}
