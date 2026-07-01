@@ -277,9 +277,9 @@ function PaymentPage() {
             <Separator className="my-6" />
 
             {/* QR kód + Platobné údaje vedľa seba */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* QR kód */}
-              <div className="flex flex-col items-center text-center">
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* QR kód - 1/3 */}
+              <div className="flex flex-col items-center text-center md:col-span-1">
                 <Badge variant="secondary" className="mb-3 gap-1.5">
                   <Smartphone className="h-3.5 w-3.5" />
                   Zaplatiť QR kódom
@@ -309,8 +309,8 @@ function PaymentPage() {
                 </div>
               </div>
 
-              {/* Platobné údaje */}
-              <div>
+              {/* Platobné údaje - 2/3 */}
+              <div className="md:col-span-2">
                 <h3 className="mb-3 text-sm font-semibold text-foreground">Platobné údaje</h3>
                 <dl className="space-y-2.5 text-sm">
                   {[
