@@ -14,9 +14,9 @@ const SITE_KEY = "6LfHAjkUAAAAADameCOtUdnICQbHOiH4Xqt1lMAw";
 // Mapovanie typov známok na text v UI
 const VIGNETTE_LABEL = {
   "1day": "1-dňová",
-  "10day": "Dnešná",
+  "10day": "10-dňová",
   "1month": "30-dňová",
-  "1year": "Ročná",
+  "1year": "365-dňová",
 };
 
 async function solveCaptcha(pageUrl) {
