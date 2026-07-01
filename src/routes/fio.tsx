@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/tasks.api";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Wallet, ArrowDownLeft, ArrowUpRight } from "lucide-react";
@@ -45,14 +46,36 @@ function FioPage() {
     refetchInterval: 30_000,
   });
 
+  const SETTINGS_KEY = "fio_last_updated_at";
   const LS_KEY = "fio-last-updated-at";
-  const effectiveUpdatedAt = (() => {
-    const stored = typeof window !== "undefined" ? Number(localStorage.getItem(LS_KEY) || 0) : 0;
-    return Math.max(dataUpdatedAt || 0, stored);
-  })();
+  const [dbUpdatedAt, setDbUpdatedAt] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    return Number(localStorage.getItem(LS_KEY) || 0);
+  });
 
+  // Načítaj z DB pri mount
   useEffect(() => {
-    if (dataUpdatedAt) localStorage.setItem(LS_KEY, String(dataUpdatedAt));
+    supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", SETTINGS_KEY)
+      .maybeSingle()
+      .then(({ data }) => {
+        const v = Number((data?.value as any) ?? 0);
+        if (v) setDbUpdatedAt((prev) => Math.max(prev, v));
+      });
+  }, []);
+
+  const effectiveUpdatedAt = Math.max(dataUpdatedAt || 0, dbUpdatedAt);
+
+  // Ulož do DB + localStorage pri každom fetchi
+  useEffect(() => {
+    if (!dataUpdatedAt) return;
+    localStorage.setItem(LS_KEY, String(dataUpdatedAt));
+    supabase
+      .from("app_settings")
+      .upsert({ key: SETTINGS_KEY, value: dataUpdatedAt as any }, { onConflict: "key" })
+      .then(() => {});
   }, [dataUpdatedAt]);
 
   const [countdown, setCountdown] = useState(30);
