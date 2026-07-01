@@ -118,6 +118,7 @@ function TasksDashboard() {
                     <TableHead>Krajina</TableHead>
                     <TableHead>Typ známky</TableHead>
                     <TableHead>Platnosť od</TableHead>
+                    <TableHead>Cena</TableHead>
                     <TableHead>Stav</TableHead>
                     <TableHead>Vytvorené</TableHead>
                     <TableHead className="w-12"></TableHead>
@@ -135,6 +136,9 @@ function TasksDashboard() {
                           {task.validity_date
                             ? format(new Date(task.validity_date), "d. MMM yyyy", { locale: sk })
                             : "—"}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {task.payment_amount ? `${task.payment_amount} €` : "—"}
                         </TableCell>
                         <TableCell>
                           <Badge variant={status.variant} className="flex w-fit items-center gap-1">
