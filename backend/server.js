@@ -316,7 +316,7 @@ async function reconcilePayments() {
     if (error) throw error;
     if (!unpaid || unpaid.length === 0) return { matched: 0, checked: 0 };
 
-    const payload = await fetchFioPeriod(30);
+    const payload = await fetchFioPeriod(90);
     const incoming = (payload.transactions || []).filter(
       (t) => Number(t.amount) > 0 && t.vs,
     );
