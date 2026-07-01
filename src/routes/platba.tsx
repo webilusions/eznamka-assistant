@@ -291,14 +291,14 @@ function PaymentPage() {
                     className="absolute -inset-3 rounded-3xl opacity-60 blur-2xl"
                     style={{ background: "var(--gradient-primary)" }}
                   />
-                  <div className="relative rounded-2xl border border-border/60 bg-white p-3 shadow-lg">
+                  <div className="relative inline-flex items-center justify-center rounded-2xl border border-border/60 bg-white p-4 shadow-lg leading-none box-content" style={{ width: 180, height: 180 }}>
                     {qrDataUrl ? (
                       <img
                         src={qrDataUrl}
                         alt="PAY by square QR kód"
                         width={180}
                         height={180}
-                        className="block aspect-square h-[180px] w-[180px] object-contain"
+                        className="block h-[180px] w-[180px] object-contain"
                       />
                     ) : qrError ? (
                       <div className="flex h-[180px] w-[180px] items-center justify-center px-4 text-sm text-destructive">
