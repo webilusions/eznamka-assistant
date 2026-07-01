@@ -169,7 +169,7 @@ function VehicleFormPage() {
       licensePlate: "",
       countryCode: "",
       vignetteType: "",
-      validityDate: addDays(new Date(), 1),
+      validityDate: new Date(new Date().setHours(0, 0, 0, 0)),
       email: "",
     },
   });
@@ -197,15 +197,23 @@ function VehicleFormPage() {
     },
   });
 
+  const formatLocalDate = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
   const onSubmit = async (values: FormValues) => {
     const prices = loadPrices();
     const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
     const amount = (prices[values.vignetteType as VignetteKey] ?? 0).toFixed(2);
+    const localDate = formatLocalDate(values.validityDate);
     const payload = {
       licensePlate: values.licensePlate.toUpperCase().trim(),
       countryCode: values.countryCode,
       vignetteType: values.vignetteType,
-      validityDate: values.validityDate.toISOString().slice(0, 10),
+      validityDate: localDate,
       email: values.email.trim(),
       variableSymbol: vs,
       amount,
@@ -224,7 +232,7 @@ function VehicleFormPage() {
 
     sessionStorage.setItem(
       "eznamka-summary",
-      JSON.stringify({ ...payload, validityDate: values.validityDate.toISOString() }),
+      JSON.stringify({ ...payload, validityDate: localDate }),
     );
     navigate({ to: "/platba" });
   };
