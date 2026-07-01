@@ -530,8 +530,7 @@ function VehicleFormPage() {
                       Dôležité upozornenie
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Automatizácia sa zastaví pred finálnym krokom platby. Údaje objednávky si
-                      musíte ručne skontrolovať pred zaplatením. Nepodporujeme automatizáciu platieb.
+                      Úhrada elektronickej diaľničnej známky sa vzťahuje VÝHRADNE na užívanie vymedzených úsekov diaľnic a rýchlostných ciest Slovenskej republiky.
                     </p>
                   </div>
                 </div>
