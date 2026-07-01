@@ -141,6 +141,9 @@ function TasksDashboard() {
                         <TableCell className="font-medium">
                           {task.payment_amount ? `${task.payment_amount} €` : "—"}
                         </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {task.variable_symbol || "—"}
+                        </TableCell>
                         <TableCell>
                           <Badge variant={status.variant} className="flex w-fit items-center gap-1">
                             {status.icon}
