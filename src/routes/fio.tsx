@@ -57,7 +57,7 @@ function FioPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Fio banka — účet</h1>
-          <p className="text-sm text-muted-foreground">Posledných 365 dní</p>
+          <p className="text-sm text-muted-foreground">Posledných 90 dní</p>
         </div>
       </div>
 
