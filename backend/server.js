@@ -316,7 +316,7 @@ async function reconcilePayments() {
     if (error) throw error;
     if (!unpaid || unpaid.length === 0) return { matched: 0, checked: 0 };
 
-    const payload = await fetchFioPeriod(90);
+    const payload = await fetchFioPeriod(30);
     const incoming = (payload.transactions || []).filter(
       (t) => Number(t.amount) > 0 && t.vs,
     );
@@ -360,7 +360,7 @@ app.post("/api/fio/reconcile", async (_req, res) => {
 });
 
 // Periodický poller každých 90s
-const POLL_MS = 35_000;
+const POLL_MS = 90_000;
 setInterval(() => {
   reconcilePayments().then((r) => {
     if (r && r.matched) console.log(`[fio] reconciled ${r.matched}/${r.checked}`);
