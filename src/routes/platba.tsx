@@ -308,7 +308,7 @@ function PaymentPage() {
               {/* Platobné údaje - 2/3 */}
               <div className="md:col-span-2">
                 <h3 className="mb-3 text-sm font-semibold text-foreground">Platobné údaje</h3>
-                <dl className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-3 text-sm">
+                <dl className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-3 text-sm">
                   {[
                     { k: "Príjemca", v: paymentAccount.name, mono: false },
                     { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
