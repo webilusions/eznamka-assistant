@@ -319,7 +319,7 @@ function PaymentPage() {
                     const hasCopy = "copy" in row || row.mono;
                     return (
                       <div key={row.k} className="contents">
-                        <dt className="text-muted-foreground">{row.k}</dt>
+                        <dt className="whitespace-nowrap text-muted-foreground">{row.k}</dt>
                         <dd className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap text-right`}>
                           {row.v}
                         </dd>
