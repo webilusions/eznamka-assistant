@@ -277,7 +277,7 @@ function PaymentPage() {
             <Separator className="my-6" />
 
             {/* QR kód + Platobné údaje vedľa seba */}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3 md:gap-12">
               {/* QR kód - 1/3 */}
               <div className="flex flex-col items-center text-center md:col-span-1">
                 <Badge variant="secondary" className="mb-3 gap-1.5">
