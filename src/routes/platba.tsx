@@ -296,7 +296,9 @@ function PaymentPage() {
                       <img
                         src={qrDataUrl}
                         alt="PAY by square QR kód"
-                        className="block h-[180px] w-[180px] max-w-full"
+                        width={180}
+                        height={180}
+                        className="block aspect-square h-[180px] w-[180px] object-contain"
                       />
                     ) : qrError ? (
                       <div className="flex h-[180px] w-[180px] items-center justify-center px-4 text-sm text-destructive">
