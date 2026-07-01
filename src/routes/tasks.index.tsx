@@ -118,6 +118,7 @@ function TasksDashboard() {
                     <TableHead>Krajina</TableHead>
                     <TableHead>Typ známky</TableHead>
                     <TableHead>Platnosť od</TableHead>
+                    <TableHead>Cena</TableHead>
                     <TableHead>Stav</TableHead>
                     <TableHead>Vytvorené</TableHead>
                     <TableHead className="w-12"></TableHead>
