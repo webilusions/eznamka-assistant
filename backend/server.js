@@ -34,7 +34,18 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_API_KEY, {
 });
 
 const app = express();
-app.use(cors({ origin: CORS_ORIGIN }));
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (CORS_ORIGIN === "*") return cb(null, true);
+    const allowed = CORS_ORIGIN.split(",").map((s) => s.trim());
+    if (allowed.includes(origin)) return cb(null, true);
+    if (/\.lovable\.(app|dev)$/i.test(new URL(origin).hostname)) return cb(null, true);
+    if (/\.kozart\.sk$/i.test(new URL(origin).hostname)) return cb(null, true);
+    return cb(null, true); // fallback povoliť
+  },
+  credentials: false,
+}));
 app.use(express.json());
 
 // Health check
