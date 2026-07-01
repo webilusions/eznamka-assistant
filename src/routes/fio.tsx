@@ -44,6 +44,9 @@ function FioPage() {
     queryKey: ["fio-account"],
     queryFn: () => apiFetch<FioData>("/fio/account?days=89"),
     refetchInterval: 30_000,
+    staleTime: 30_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const SETTINGS_KEY = "fio_last_updated_at";
