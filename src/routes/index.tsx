@@ -156,6 +156,7 @@ export const Route = createFileRoute("/")({
 function VehicleFormPage() {
   const navigate = useNavigate();
   const createTaskFn = useServerFn(createTask);
+  const vignetteTypes = buildVignetteTypes();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
