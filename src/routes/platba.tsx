@@ -90,7 +90,7 @@ function CopyButton({ value, label }: { value: string; label?: string }) {
           /* ignore */
         }
       }}
-      className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/60 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border/60 bg-background/60 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
       aria-label={label ?? "Kopírovať"}
     >
       {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
@@ -194,7 +194,7 @@ function PaymentPage() {
         style={{ background: "oklch(0.55 0.18 280 / 0.18)" }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-2xl px-4 py-12 sm:py-16">
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-4 py-12 sm:py-16">
         {/* Top bar */}
         <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" asChild size="sm" className="text-muted-foreground hover:text-foreground">
@@ -277,9 +277,9 @@ function PaymentPage() {
             <Separator className="my-6" />
 
             {/* QR kód + Platobné údaje vedľa seba */}
-            <div className="grid gap-6 md:grid-cols-3 md:gap-12">
+            <div className="grid gap-6 md:grid-cols-[minmax(220px,1fr)_minmax(0,2fr)] md:gap-10">
               {/* QR kód - 1/3 */}
-              <div className="flex flex-col items-center text-center md:col-span-1">
+              <div className="flex flex-col items-center text-center">
                 <Badge variant="secondary" className="mb-3 gap-1.5">
                   <Smartphone className="h-3.5 w-3.5" />
                   Zaplatiť QR kódom
@@ -306,9 +306,9 @@ function PaymentPage() {
               </div>
 
               {/* Platobné údaje - 2/3 */}
-              <div className="md:col-span-2">
+              <div className="min-w-0">
                 <h3 className="mb-3 text-sm font-semibold text-foreground">Platobné údaje</h3>
-                <dl className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-3 text-sm">
+                <dl className="grid w-full grid-cols-[max-content_minmax(0,1fr)_max-content] items-center gap-x-2 gap-y-3 text-xs sm:text-sm">
                   {[
                     { k: "Príjemca", v: paymentAccount.name, mono: false },
                     { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
@@ -320,7 +320,7 @@ function PaymentPage() {
                     return (
                       <div key={row.k} className="contents">
                         <dt className="whitespace-nowrap text-muted-foreground">{row.k}</dt>
-                        <dd className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap text-right`}>
+                        <dd className={`${row.mono ? "font-mono " : ""}min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-right font-medium`}>
                           {row.v}
                         </dd>
                         <div className="justify-self-end">
