@@ -356,7 +356,7 @@ setInterval(() => {
   });
 }, POLL_MS);
 
-app.listen(PORT, () => {
-  console.log(`Backend beží na porte ${PORT} (Fio poller každých ${POLL_MS / 1000}s)`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Backend beží na 0.0.0.0:${PORT} (Fio poller každých ${POLL_MS / 1000}s)`);
 });
 
