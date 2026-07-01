@@ -320,7 +320,7 @@ function PaymentPage() {
                     return (
                       <div key={row.k} className="contents">
                         <dt className="whitespace-nowrap text-muted-foreground">{row.k}</dt>
-                        <dd className={`${row.mono ? "font-mono " : ""}min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-right font-medium`}>
+                        <dd className={`${row.mono ? "font-mono " : ""}min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left font-medium`}>
                           {row.v}
                         </dd>
                         <div className="justify-self-end">
