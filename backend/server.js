@@ -310,7 +310,7 @@ app.get("/api/fio/account", async (req, res) => {
 });
 
 // Reconciliácia platieb: spáruje prichádzajúce platby s úlohami v stave 'unpaid' podľa VS
-async function reconcilePayments() {
+async function reconcilePayments(prefetched = null) {
   try {
     const { data: unpaid, error } = await supabase
       .from("tasks")
@@ -320,7 +320,7 @@ async function reconcilePayments() {
     if (error) throw error;
     if (!unpaid || unpaid.length === 0) return { matched: 0, checked: 0 };
 
-    const payload = await fetchFioPeriod(30);
+    const payload = prefetched || (await fetchFioPeriod(30));
     const incoming = (payload.transactions || []).filter(
       (t) => Number(t.amount) > 0 && t.vs,
     );
@@ -330,12 +330,12 @@ async function reconcilePayments() {
       const tx = incoming.find((t) => String(t.vs) === String(task.variable_symbol));
       if (!tx) continue;
       const expected = parseFloat(task.payment_amount || "0");
-      if (expected > 0 && Number(tx.amount) + 0.01 < expected) continue; // nedostatočná suma
+      if (expected > 0 && Number(tx.amount) + 0.01 < expected) continue;
       const { error: upErr } = await supabase
         .from("tasks")
         .update({ status: "paid" })
         .eq("id", task.id)
-        .eq("status", "unpaid"); // race-safe
+        .eq("status", "unpaid");
       if (upErr) {
         console.error("update paid err:", upErr);
         continue;
@@ -363,13 +363,22 @@ app.post("/api/fio/reconcile", async (_req, res) => {
   res.json(result);
 });
 
-// Periodický poller každých 90s
-const POLL_MS = 90_000;
-setInterval(() => {
-  reconcilePayments().then((r) => {
+// Adaptívny poller: 35s ak sú nezaplatené úlohy, inak 5 min (šetrí Fio rate-limit)
+const POLL_FAST_MS = 35_000;
+const POLL_SLOW_MS = 5 * 60_000;
+async function pollLoop() {
+  const { count } = await supabase
+    .from("tasks")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "unpaid");
+  const hasUnpaid = (count || 0) > 0;
+  if (hasUnpaid) {
+    const r = await reconcilePayments();
     if (r && r.matched) console.log(`[fio] reconciled ${r.matched}/${r.checked}`);
-  });
-}, POLL_MS);
+  }
+  setTimeout(pollLoop, hasUnpaid ? POLL_FAST_MS : POLL_SLOW_MS);
+}
+setTimeout(pollLoop, 5000);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend beží na 0.0.0.0:${PORT} (Fio poller každých ${POLL_MS / 1000}s)`);
