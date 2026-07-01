@@ -27,6 +27,7 @@ import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
+import { loadPrices, formatPriceEUR, type VignetteKey } from "@/lib/prices";
 
 
 
@@ -85,40 +86,43 @@ const countries = [
   { code: "AT", name: "Rakúsko", flag: "🇦🇹" },
 ];
 
-const vignetteTypes = [
-  {
-    value: "1year",
-    title: "365-DŇOVÁ 2026",
-    badge: "365/D",
-    badgeClass: "bg-[#1e4a7a] text-white",
-    validity: "365 dní od začiatku platnosti",
-    price: "90,00 EUR",
-  },
-  {
-    value: "1month",
-    title: "30-DŇOVÁ 2026",
-    badge: "30/D",
-    badgeClass: "bg-[#5bb3e4] text-white",
-    validity: "30 dní od začiatku platnosti",
-    price: "17,10 EUR",
-  },
-  {
-    value: "10day",
-    title: "10-DŇOVÁ 2026",
-    badge: "10/D",
-    badgeClass: "bg-[#9ca3af] text-white",
-    validity: "10 dní od začiatku platnosti",
-    price: "10,80 EUR",
-  },
-  {
-    value: "1day",
-    title: "1-DŇOVÁ 2026",
-    badge: "1/D",
-    badgeClass: "bg-[#f5a623] text-white",
-    validity: "1 deň od začiatku platnosti",
-    price: "8,10 EUR",
-  },
-];
+const buildVignetteTypes = () => {
+  const p = loadPrices();
+  return [
+    {
+      value: "1year",
+      title: "365-DŇOVÁ 2026",
+      badge: "365/D",
+      badgeClass: "bg-[#1e4a7a] text-white",
+      validity: "365 dní od začiatku platnosti",
+      price: formatPriceEUR(p["1year"]),
+    },
+    {
+      value: "1month",
+      title: "30-DŇOVÁ 2026",
+      badge: "30/D",
+      badgeClass: "bg-[#5bb3e4] text-white",
+      validity: "30 dní od začiatku platnosti",
+      price: formatPriceEUR(p["1month"]),
+    },
+    {
+      value: "10day",
+      title: "10-DŇOVÁ 2026",
+      badge: "10/D",
+      badgeClass: "bg-[#9ca3af] text-white",
+      validity: "10 dní od začiatku platnosti",
+      price: formatPriceEUR(p["10day"]),
+    },
+    {
+      value: "1day",
+      title: "1-DŇOVÁ 2026",
+      badge: "1/D",
+      badgeClass: "bg-[#f5a623] text-white",
+      validity: "1 deň od začiatku platnosti",
+      price: formatPriceEUR(p["1day"]),
+    },
+  ];
+};
 
 const quickCountries = [
   { code: "SK", name: "Slovensko", flag: "🇸🇰" },
@@ -152,6 +156,7 @@ export const Route = createFileRoute("/")({
 function VehicleFormPage() {
   const navigate = useNavigate();
   const createTaskFn = useServerFn(createTask);
+  const vignetteTypes = buildVignetteTypes();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -188,14 +193,9 @@ function VehicleFormPage() {
   });
 
   const onSubmit = async (values: FormValues) => {
-    const priceMap: Record<string, string> = {
-      "1year": "90.00",
-      "1month": "17.10",
-      "10day": "10.80",
-      "1day": "8.10",
-    };
+    const prices = loadPrices();
     const vs = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    const amount = priceMap[values.vignetteType] ?? "0.00";
+    const amount = (prices[values.vignetteType as VignetteKey] ?? 0).toFixed(2);
     const payload = {
       licensePlate: values.licensePlate.toUpperCase().trim(),
       countryCode: values.countryCode,
