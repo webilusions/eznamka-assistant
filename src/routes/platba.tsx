@@ -285,9 +285,7 @@ function PaymentPage() {
                   PAY by square
                 </Badge>
                 <h2 className="font-display text-lg font-semibold">Zaplatiť QR kódom</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Otvorte bankovú aplikáciu a naskenujte kód.
-                </p>
+
 
                 <div className="relative my-6 flex items-center justify-center">
                   <div
