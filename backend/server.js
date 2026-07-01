@@ -360,7 +360,7 @@ app.post("/api/fio/reconcile", async (_req, res) => {
 });
 
 // Periodický poller každých 90s
-const POLL_MS = 30_000;
+const POLL_MS = 35_000;
 setInterval(() => {
   reconcilePayments().then((r) => {
     if (r && r.matched) console.log(`[fio] reconciled ${r.matched}/${r.checked}`);
