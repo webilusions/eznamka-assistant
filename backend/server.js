@@ -381,6 +381,6 @@ async function pollLoop() {
 setTimeout(pollLoop, 5000);
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Backend beží na 0.0.0.0:${PORT} (Fio poller každých ${POLL_MS / 1000}s)`);
+  console.log(`Backend beží na 0.0.0.0:${PORT} (Fio poller: ${POLL_FAST_MS / 1000}s pri nezaplatených, inak ${POLL_SLOW_MS / 1000}s)`);
 });
 
