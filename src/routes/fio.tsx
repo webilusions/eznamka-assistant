@@ -40,7 +40,7 @@ export const Route = createFileRoute("/fio")({
 function FioPage() {
   const { data, isLoading, error } = useQuery<FioData>({
     queryKey: ["fio-account"],
-    queryFn: () => apiFetch<FioData>("/fio/account?days=90"),
+    queryFn: () => apiFetch<FioData>("/fio/account?days=365"),
     refetchInterval: 60_000,
   });
 
