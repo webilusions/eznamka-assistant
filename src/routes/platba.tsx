@@ -321,8 +321,8 @@ function PaymentPage() {
                       className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
                     >
                       <dt className="text-muted-foreground">{row.k}</dt>
-                      <dd className="flex flex-1 items-center gap-2 min-w-0 justify-end">
-                        <span className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap`}>
+                      <dd className="flex flex-1 items-center gap-2 min-w-0">
+                        <span className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap ml-auto`}>
                           {row.v}
                         </span>
                         {"copy" in row || row.mono ? (
