@@ -181,22 +181,22 @@ function PaymentPage() {
   ];
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      {/* Decorative background */}
+    <div className="relative min-h-screen w-full overflow-hidden bg-background selection:bg-primary/30">
+      {/* Ambient background glows — zladené s indexom */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px]"
-        style={{ background: "var(--gradient-hero)" }}
+        className="pointer-events-none absolute -top-32 -right-32 -z-0 h-[420px] w-[420px] rounded-full blur-[120px]"
+        style={{ background: "oklch(0.74 0.14 230 / 0.18)" }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
-        style={{ background: "var(--gradient-primary)" }}
+        className="pointer-events-none absolute -bottom-32 -left-32 -z-0 h-[420px] w-[420px] rounded-full blur-[120px]"
+        style={{ background: "oklch(0.55 0.18 280 / 0.18)" }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-5xl px-4 py-10 sm:py-14">
+      <div className="relative z-10 mx-auto w-full max-w-2xl px-4 py-12 sm:py-16">
         {/* Top bar */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" asChild size="sm" className="text-muted-foreground hover:text-foreground">
             <Link to="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -209,95 +209,76 @@ function PaymentPage() {
           </Badge>
         </div>
 
-        {/* Heading */}
+        {/* Header — rovnaký štýl ako index */}
         <div className="mb-10 text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            Krok 2 z 2
-          </p>
-          <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             Sumár objednávky
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
-            Skontrolujte údaje a zaplaťte naskenovaním QR kódu v mobilnej bankovej aplikácii.
+          <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+            Skontrolujte údaje a zaplaťte QR kódom v bankovej aplikácii.
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-5">
-          {/* Order summary */}
-          <Card className="rounded-3xl border-border/60 bg-card/80 shadow-[var(--shadow-elegant)] backdrop-blur lg:col-span-3">
-            <CardContent className="p-6 sm:p-8">
-              <div className="mb-6 flex items-center justify-between">
+        {/* Main Card */}
+        <Card className="relative overflow-hidden rounded-3xl border-border bg-card p-2 shadow-2xl">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full blur-[100px]"
+            style={{ background: "oklch(0.74 0.14 230 / 0.10)" }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full blur-[100px]"
+            style={{ background: "oklch(0.55 0.18 280 / 0.10)" }}
+          />
+          <CardContent className="relative p-6 sm:p-8">
+            {/* Suma */}
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Ticket className="h-5 w-5 text-primary" />
+                </div>
                 <div>
-                  <h2 className="font-display text-lg font-semibold">Detail objednávky</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Variabilný symbol{" "}
-                    <span className="font-mono font-semibold text-foreground">
-                      {summary.variableSymbol}
-                    </span>
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-2 text-right">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-primary/80">
-                    K úhrade
-                  </div>
-                  <div className="font-display text-2xl font-bold text-primary">
-                    {summary.amount} €
+                  <div className="text-sm font-semibold text-foreground">Detail objednávky</div>
+                  <div className="text-xs text-muted-foreground">
+                    VS <span className="font-mono font-semibold text-foreground">{summary.variableSymbol}</span>
                   </div>
                 </div>
               </div>
-
-              <div className="divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/40">
-                {detailRows.map(({ icon: Icon, label, value }) => (
-                  <div key={label} className="flex items-center gap-4 px-4 py-3.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                        {label}
-                      </div>
-                      <div className="truncate text-sm font-semibold text-foreground">
-                        {value}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-2 text-right">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-primary/80">
+                  K úhrade
+                </div>
+                <div className="font-display text-2xl font-bold text-primary">
+                  {summary.amount} €
+                </div>
               </div>
+            </div>
 
-              <Separator className="my-6" />
-
-              <h3 className="mb-3 text-sm font-semibold text-foreground">Platobné údaje</h3>
-              <dl className="space-y-2.5 text-sm">
-                {[
-                  { k: "Príjemca", v: paymentAccount.name, mono: false },
-                  { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
-                  { k: "BIC / SWIFT", v: paymentAccount.bic, mono: true },
-                  { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
-                  { k: "Suma", v: `${summary.amount} EUR`, mono: true },
-                ].map((row) => (
-                  <div
-                    key={row.k}
-                    className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
-                  >
-                    <dt className="text-muted-foreground">{row.k}</dt>
-                    <dd className="flex items-center gap-2">
-                      <span className={row.mono ? "font-mono font-medium" : "font-medium"}>
-                        {row.v}
-                      </span>
-                      {"copy" in row || row.mono ? (
-                        <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
-                      ) : null}
-                    </dd>
+            {/* Detaily */}
+            <div className="divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/40">
+              {detailRows.map(({ icon: Icon, label, value }) => (
+                <div key={label} className="flex items-center gap-4 px-4 py-3.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
+                    <Icon className="h-4 w-4" />
                   </div>
-                ))}
-              </dl>
-            </CardContent>
-          </Card>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      {label}
+                    </div>
+                    <div className="truncate text-sm font-semibold text-foreground">
+                      {value}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          {/* QR code */}
-          <Card className="rounded-3xl border-border/60 bg-card/80 shadow-[var(--shadow-elegant)] backdrop-blur lg:col-span-2">
-            <CardContent className="flex h-full flex-col items-center p-6 text-center sm:p-8">
-              <Badge variant="secondary" className="mb-4 gap-1.5">
+            <Separator className="my-6" />
+
+            {/* QR kód */}
+            <div className="flex flex-col items-center text-center">
+              <Badge variant="secondary" className="mb-3 gap-1.5">
                 <Smartphone className="h-3.5 w-3.5" />
                 PAY by square
               </Badge>
@@ -317,35 +298,49 @@ function PaymentPage() {
                     <img
                       src={qrDataUrl}
                       alt="PAY by square QR kód"
-                      className="block h-[280px] w-[280px] max-w-full"
+                      className="block h-[260px] w-[260px] max-w-full"
                     />
                   ) : qrError ? (
-                    <div className="flex h-[280px] w-[280px] items-center justify-center px-4 text-sm text-destructive">
+                    <div className="flex h-[260px] w-[260px] items-center justify-center px-4 text-sm text-destructive">
                       {qrError}
                     </div>
                   ) : (
-                    <div className="h-[280px] w-[280px] animate-pulse rounded-lg bg-secondary" />
+                    <div className="h-[260px] w-[260px] animate-pulse rounded-lg bg-secondary" />
                   )}
                 </div>
               </div>
+            </div>
 
-              <ol className="mt-auto w-full space-y-2 text-left text-xs text-muted-foreground">
-                {[
-                  "Otvorte mobilnú bankovú aplikáciu",
-                  "Zvoľte „Platba QR kódom\"",
-                  "Naskenujte a potvrďte platbu",
-                ].map((step, i) => (
-                  <li key={step} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-                      {i + 1}
+            <Separator className="my-2" />
+
+            {/* Platobné údaje */}
+            <h3 className="mb-3 mt-6 text-sm font-semibold text-foreground">Platobné údaje</h3>
+            <dl className="space-y-2.5 text-sm">
+              {[
+                { k: "Príjemca", v: paymentAccount.name, mono: false },
+                { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
+                { k: "BIC / SWIFT", v: paymentAccount.bic, mono: true },
+                { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
+                { k: "Suma", v: `${summary.amount} EUR`, mono: true },
+              ].map((row) => (
+                <div
+                  key={row.k}
+                  className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
+                >
+                  <dt className="text-muted-foreground">{row.k}</dt>
+                  <dd className="flex items-center gap-2">
+                    <span className={row.mono ? "font-mono font-medium" : "font-medium"}>
+                      {row.v}
                     </span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </CardContent>
-          </Card>
-        </div>
+                    {"copy" in row || row.mono ? (
+                      <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
+                    ) : null}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </CardContent>
+        </Card>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
           Po pripísaní platby vám pošleme potvrdenie na{" "}
