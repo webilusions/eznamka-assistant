@@ -324,11 +324,13 @@ function PaymentPage() {
                     if (isIban) {
                       return (
                         <div key={row.k} className="rounded-lg px-1 py-1">
-                          <dt className="mb-1 text-muted-foreground">{row.k}</dt>
-                          <dd className="flex flex-col gap-1.5">
-                            <span className="font-mono font-medium whitespace-nowrap">{row.v}</span>
+                          <div className="flex items-center justify-between gap-3">
+                            <dt className="text-muted-foreground">{row.k}</dt>
+                            <dd className="font-mono font-medium whitespace-nowrap">{row.v}</dd>
+                          </div>
+                          <div className="mt-1.5 flex justify-end">
                             <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
-                          </dd>
+                          </div>
                         </div>
                       );
                     }
