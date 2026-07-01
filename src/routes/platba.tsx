@@ -280,10 +280,6 @@ function PaymentPage() {
             <div className="grid gap-6 md:grid-cols-2">
               {/* QR kód */}
               <div className="flex flex-col items-center text-center">
-                <Badge variant="secondary" className="mb-3 gap-1.5">
-                  <Smartphone className="h-3.5 w-3.5" />
-                  Zaplatiť QR kódom
-                </Badge>
                 <h2 className="font-display text-lg font-semibold">Zaplatiť QR kódom</h2>
 
 
