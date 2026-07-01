@@ -119,6 +119,7 @@ function TasksDashboard() {
                     <TableHead>Typ známky</TableHead>
                     <TableHead>Platnosť od</TableHead>
                     <TableHead>Cena</TableHead>
+                    <TableHead>VS</TableHead>
                     <TableHead>Stav</TableHead>
                     <TableHead>Vytvorené</TableHead>
                     <TableHead className="w-12"></TableHead>
@@ -139,6 +140,9 @@ function TasksDashboard() {
                         </TableCell>
                         <TableCell className="font-medium">
                           {task.payment_amount ? `${task.payment_amount} €` : "—"}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {task.variable_symbol || "—"}
                         </TableCell>
                         <TableCell>
                           <Badge variant={status.variant} className="flex w-fit items-center gap-1">
