@@ -27,7 +27,8 @@ import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { createTask } from "@/lib/tasks.functions";
 import { externalTasksApi, isExternalApiEnabled } from "@/lib/tasks.api";
-import { loadPrices, formatPriceEUR, type VignetteKey } from "@/lib/prices";
+import { loadPrices, fetchPrices, formatPriceEUR, type VignetteKey } from "@/lib/prices";
+import { useEffect, useState } from "react";
 
 
 
@@ -156,6 +157,10 @@ export const Route = createFileRoute("/")({
 function VehicleFormPage() {
   const navigate = useNavigate();
   const createTaskFn = useServerFn(createTask);
+  const [, setPricesVersion] = useState(0);
+  useEffect(() => {
+    fetchPrices().then(() => setPricesVersion((v) => v + 1));
+  }, []);
   const vignetteTypes = buildVignetteTypes();
 
   const form = useForm<FormValues>({
