@@ -45,16 +45,26 @@ function FioPage() {
     refetchInterval: 30_000,
   });
 
+  const LS_KEY = "fio-last-updated-at";
+  const effectiveUpdatedAt = (() => {
+    const stored = typeof window !== "undefined" ? Number(localStorage.getItem(LS_KEY) || 0) : 0;
+    return Math.max(dataUpdatedAt || 0, stored);
+  })();
+
+  useEffect(() => {
+    if (dataUpdatedAt) localStorage.setItem(LS_KEY, String(dataUpdatedAt));
+  }, [dataUpdatedAt]);
+
   const [countdown, setCountdown] = useState(30);
   useEffect(() => {
     const tick = () => {
-      const elapsed = Math.floor((Date.now() - dataUpdatedAt) / 1000);
+      const elapsed = Math.floor((Date.now() - effectiveUpdatedAt) / 1000);
       setCountdown(Math.max(0, 30 - elapsed));
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [dataUpdatedAt]);
+  }, [effectiveUpdatedAt]);
 
   const fmtAmount = (n?: number, c?: string) =>
     typeof n === "number"
