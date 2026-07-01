@@ -282,7 +282,7 @@ function PaymentPage() {
               <div className="flex flex-col items-center text-center">
                 <Badge variant="secondary" className="mb-3 gap-1.5">
                   <Smartphone className="h-3.5 w-3.5" />
-                  PAY by square
+                  Zaplatiť QR kódom
                 </Badge>
                 <h2 className="font-display text-lg font-semibold">Zaplatiť QR kódom</h2>
 
