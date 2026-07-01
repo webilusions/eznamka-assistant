@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Settings2, RotateCcw, Save } from "lucide-react";
+import { Settings2, RotateCcw, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { DEFAULT_PRICES, loadPrices, savePrices, type VignetteKey } from "@/lib/prices";
+import { DEFAULT_PRICES, fetchPrices, loadPrices, savePrices, type VignetteKey } from "@/lib/prices";
 
 export const Route = createFileRoute("/nastavenia")({
   head: () => ({
@@ -24,21 +24,43 @@ const LABELS: Record<VignetteKey, string> = {
 
 function SettingsPage() {
   const [prices, setPrices] = useState<Record<VignetteKey, number>>(() => loadPrices());
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchPrices()
+      .then(setPrices)
+      .finally(() => setLoading(false));
+  }, []);
 
   const update = (k: VignetteKey, v: string) => {
     const n = parseFloat(v.replace(",", "."));
     setPrices((p) => ({ ...p, [k]: isNaN(n) ? 0 : n }));
   };
 
-  const handleSave = () => {
-    savePrices(prices);
-    toast.success("Ceny boli uložené");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await savePrices(prices);
+      toast.success("Ceny boli uložené do databázy");
+    } catch (e: any) {
+      toast.error(`Chyba pri ukladaní: ${e.message ?? e}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleReset = () => {
-    setPrices({ ...DEFAULT_PRICES });
-    savePrices({ ...DEFAULT_PRICES });
-    toast.success("Obnovené na predvolené ceny");
+  const handleReset = async () => {
+    setSaving(true);
+    try {
+      setPrices({ ...DEFAULT_PRICES });
+      await savePrices({ ...DEFAULT_PRICES });
+      toast.success("Obnovené na predvolené ceny");
+    } catch (e: any) {
+      toast.error(`Chyba pri ukladaní: ${e.message ?? e}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -71,6 +93,7 @@ function SettingsPage() {
                   min="0"
                   value={prices[k]}
                   onChange={(e) => update(k, e.target.value)}
+                  disabled={loading}
                   className="pr-12"
                 />
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -81,16 +104,17 @@ function SettingsPage() {
           ))}
 
           <div className="flex gap-2 pt-2">
-            <Button onClick={handleSave} className="flex-1">
-              <Save className="mr-2 h-4 w-4" /> Uložiť
+            <Button onClick={handleSave} className="flex-1" disabled={saving || loading}>
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Uložiť
             </Button>
-            <Button variant="outline" onClick={handleReset}>
+            <Button variant="outline" onClick={handleReset} disabled={saving || loading}>
               <RotateCcw className="mr-2 h-4 w-4" /> Predvolené
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Ceny sa ukladajú lokálne v tomto prehliadači.
+            Ceny sú uložené v databáze a zdieľané naprieč všetkými zariadeniami.
           </p>
         </CardContent>
       </Card>
