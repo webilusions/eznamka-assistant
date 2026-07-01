@@ -247,11 +247,11 @@ async function fetchFioPeriod(days = 30) {
   const url = `https://fioapi.fio.cz/v1/rest/periods/${token}/${fmt(from)}/${fmt(to)}/transactions.json`;
   const r = await fetch(url);
   if (!r.ok) {
-    if (r.status === 409 && cached) {
+    if (cached) {
       return { ...cached.data, cached: true, stale: true, cacheAgeSec: Math.round((now - cached.ts) / 1000) };
     }
     const text = await r.text();
-    const err = new Error(r.status === 409 ? "Fio API limit: 1 požiadavka za 30 sekúnd." : `Fio API ${r.status}`);
+    const err = new Error(r.status === 409 ? "Fio API limit: 1 požiadavka za 30 sekúnd. Skús o chvíľu." : `Fio API ${r.status}`);
     err.status = r.status;
     err.detail = text.slice(0, 500);
     throw err;
