@@ -285,13 +285,7 @@ function PaymentPage() {
                   Zaplatiť QR kódom
                 </Badge>
                 <div className="relative mb-6 flex items-center justify-center">
-
-                  <div
-                    aria-hidden
-                    className="absolute -inset-3 rounded-3xl opacity-60 blur-2xl"
-                    style={{ background: "var(--gradient-primary)" }}
-                  />
-                  <div className="relative inline-flex items-center justify-center rounded-2xl border border-border/60 bg-white p-4 shadow-lg leading-none box-content" style={{ width: 180, height: 180 }}>
+                  <div className="relative inline-flex items-center justify-center rounded-2xl border-2 border-primary bg-white p-4 leading-none box-content" style={{ width: 180, height: 180 }}>
                     {qrDataUrl ? (
                       <img
                         src={qrDataUrl}
