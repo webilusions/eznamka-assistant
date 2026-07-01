@@ -284,7 +284,8 @@ function PaymentPage() {
                   <Smartphone className="h-3.5 w-3.5" />
                   Zaplatiť QR kódom
                 </Badge>
-                <h2 className="font-display text-lg font-semibold">Zaplatiť QR kódom</h2>
+
+
 
 
                 <div className="relative my-6 flex items-center justify-center">
