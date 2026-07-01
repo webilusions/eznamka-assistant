@@ -230,7 +230,7 @@ app.post("/api/tasks/:id/run", async (req, res) => {
 
 // ── Fio integrácia ──
 const fioCache = new Map();
-const FIO_TTL_MS = 35_000;
+const FIO_TTL_MS = 60_000;
 
 async function fetchFioPeriod(days = 30) {
   const token = process.env.FIO_TOKEN;
