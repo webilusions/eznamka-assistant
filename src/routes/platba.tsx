@@ -320,8 +320,8 @@ function PaymentPage() {
                     { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
                     { k: "Suma", v: `${summary.amount} EUR`, mono: true },
                   ].map((row) => {
-                    const isIban = row.k === "IBAN";
-                    if (isIban) {
+                    const stacked = ["IBAN", "BIC / SWIFT", "Variabilný symbol"].includes(row.k);
+                    if (stacked) {
                       return (
                         <div key={row.k} className="rounded-lg px-1 py-1">
                           <div className="flex items-center justify-between gap-3">
