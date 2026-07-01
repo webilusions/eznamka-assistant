@@ -300,6 +300,10 @@ app.get("/api/fio/account", async (req, res) => {
     const days = Math.min(parseInt(req.query.days) || 90, 365);
     const payload = await fetchFioPeriod(days);
     res.json(payload);
+    // Ak sú dáta čerstvé (nie z cache), okamžite spusti reconcile bez nového volania Fio API
+    if (!payload.cached) {
+      reconcilePayments(payload).catch((e) => console.error("reconcile-on-fetch:", e.message));
+    }
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message, detail: e.detail });
   }
