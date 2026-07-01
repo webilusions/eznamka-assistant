@@ -296,14 +296,14 @@ function PaymentPage() {
                       <img
                         src={qrDataUrl}
                         alt="PAY by square QR kód"
-                        className="block h-[240px] w-[240px] max-w-full"
+                        className="block h-[180px] w-[180px] max-w-full"
                       />
                     ) : qrError ? (
-                      <div className="flex h-[240px] w-[240px] items-center justify-center px-4 text-sm text-destructive">
+                      <div className="flex h-[180px] w-[180px] items-center justify-center px-4 text-sm text-destructive">
                         {qrError}
                       </div>
                     ) : (
-                      <div className="h-[240px] w-[240px] animate-pulse rounded-lg bg-secondary" />
+                      <div className="h-[180px] w-[180px] animate-pulse rounded-lg bg-secondary" />
                     )}
                   </div>
                 </div>
