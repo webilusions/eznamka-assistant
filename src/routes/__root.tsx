@@ -31,6 +31,7 @@ import {
   Play,
   ShieldCheck,
   Wallet,
+  Settings2,
 } from "lucide-react";
 
 function NotFoundComponent() {
