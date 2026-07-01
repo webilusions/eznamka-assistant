@@ -308,7 +308,7 @@ function PaymentPage() {
               {/* Platobné údaje - 2/3 */}
               <div className="md:col-span-2">
                 <h3 className="mb-3 text-sm font-semibold text-foreground">Platobné údaje</h3>
-                <dl className="space-y-2.5 text-sm">
+                <dl className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-3 text-sm">
                   {[
                     { k: "Príjemca", v: paymentAccount.name, mono: false },
                     { k: "IBAN", v: paymentAccount.ibanFormatted, copy: paymentAccount.iban, mono: true },
@@ -318,10 +318,7 @@ function PaymentPage() {
                   ].map((row) => {
                     const hasCopy = "copy" in row || row.mono;
                     return (
-                      <div
-                        key={row.k}
-                        className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg px-1 py-1"
-                      >
+                      <div key={row.k} className="contents">
                         <dt className="text-muted-foreground">{row.k}</dt>
                         <dd className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap text-right`}>
                           {row.v}
@@ -329,7 +326,9 @@ function PaymentPage() {
                         <div className="justify-self-end">
                           {hasCopy ? (
                             <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
-                          ) : null}
+                          ) : (
+                            <span aria-hidden />
+                          )}
                         </div>
                       </div>
                     );
