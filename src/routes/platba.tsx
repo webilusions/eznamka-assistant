@@ -315,22 +315,25 @@ function PaymentPage() {
                     { k: "BIC / SWIFT", v: paymentAccount.bic, mono: true },
                     { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
                     { k: "Suma", v: `${summary.amount} EUR`, mono: true },
-                  ].map((row) => (
-                    <div
-                      key={row.k}
-                      className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
-                    >
-                      <dt className="text-muted-foreground">{row.k}</dt>
-                      <dd className="flex flex-1 items-center gap-2 min-w-0">
-                        <span className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap ml-auto`}>
+                  ].map((row) => {
+                    const hasCopy = "copy" in row || row.mono;
+                    return (
+                      <div
+                        key={row.k}
+                        className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg px-1 py-1"
+                      >
+                        <dt className="text-muted-foreground">{row.k}</dt>
+                        <dd className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap text-right`}>
                           {row.v}
-                        </span>
-                        {"copy" in row || row.mono ? (
-                          <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
-                        ) : null}
-                      </dd>
-                    </div>
-                  ))}
+                        </dd>
+                        <div className="justify-self-end">
+                          {hasCopy ? (
+                            <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </dl>
               </div>
             </div>
