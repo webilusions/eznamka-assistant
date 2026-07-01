@@ -319,38 +319,22 @@ function PaymentPage() {
                     { k: "BIC / SWIFT", v: paymentAccount.bic, mono: true },
                     { k: "Variabilný symbol", v: summary.variableSymbol, mono: true },
                     { k: "Suma", v: `${summary.amount} EUR`, mono: true },
-                  ].map((row) => {
-                    const stacked = ["IBAN", "BIC / SWIFT", "Variabilný symbol"].includes(row.k);
-                    if (stacked) {
-                      return (
-                        <div key={row.k} className="rounded-lg px-1 py-1">
-                          <div className="flex items-center justify-between gap-3">
-                            <dt className="text-muted-foreground">{row.k}</dt>
-                            <dd className="font-mono font-medium whitespace-nowrap">{row.v}</dd>
-                          </div>
-                          <div className="mt-1.5 flex justify-end">
-                            <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
-                          </div>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div
-                        key={row.k}
-                        className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
-                      >
-                        <dt className="text-muted-foreground">{row.k}</dt>
-                        <dd className="flex items-center gap-2">
-                          <span className={row.mono ? "font-mono font-medium" : "font-medium"}>
-                            {row.v}
-                          </span>
-                          {"copy" in row || row.mono ? (
-                            <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
-                          ) : null}
-                        </dd>
-                      </div>
-                    );
-                  })}
+                  ].map((row) => (
+                    <div
+                      key={row.k}
+                      className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
+                    >
+                      <dt className="text-muted-foreground">{row.k}</dt>
+                      <dd className="flex items-center gap-2 min-w-0">
+                        <span className={`${row.mono ? "font-mono " : ""}font-medium whitespace-nowrap`}>
+                          {row.v}
+                        </span>
+                        {"copy" in row || row.mono ? (
+                          <CopyButton value={(row as { copy?: string }).copy ?? row.v} />
+                        ) : null}
+                      </dd>
+                    </div>
+                  ))}
                 </dl>
               </div>
             </div>
