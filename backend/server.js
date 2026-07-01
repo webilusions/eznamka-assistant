@@ -297,7 +297,7 @@ async function fetchFioPeriod(days = 30) {
 // GET /api/fio/account
 app.get("/api/fio/account", async (req, res) => {
   try {
-    const days = Math.min(parseInt(req.query.days) || 30, 90);
+    const days = Math.min(parseInt(req.query.days) || 90, 365);
     const payload = await fetchFioPeriod(days);
     res.json(payload);
   } catch (e) {
